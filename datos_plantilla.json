@@ -1,0 +1,1226 @@
+{
+ "matriz": {
+  "A": {
+   "turno": "7 AM - 2 PM- BICENTENARIO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "B": {
+   "turno": "1 PM - 8 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 6,
+    "R.D.N": 1,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "C": {
+   "turno": "2 PM - 9 PM- BICENTENARIO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 2,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "D": {
+   "turno": "8 AM - 3 PM- BICENTENARIO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "E": {
+   "turno": "8 AM - 3 PM- BICENTENARIO DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "F": {
+   "turno": "1 PM - 8 PM BICENTENARIO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 1,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "G": {
+   "turno": "8 AM - 4 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "H": {
+   "turno": "8 AM - 5 PM",
+   "horas": {
+    "H.E.D": 1,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "I": {
+   "turno": "8 AM - 3 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "J": {
+   "turno": "8 AM - 8 PM BICENTENARIO DOMINGO (S.O.S)",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 1,
+    "H.E.D.D": 4
+   }
+  },
+  "K": {
+   "turno": "8 AM - 7 PM",
+   "horas": {
+    "H.E.D": 3,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "L": {
+   "turno": "8 AM - 1 PM/ 5 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 3,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "M": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "N": {
+   "turno": "8 AM - 1 PM/ 6 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 2,
+    "R.NOCTURNO": 1,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "O": {
+   "turno": "8 AM - 1 PM/ 7 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 1,
+    "R.NOCTURNO": 2,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "P": {
+   "turno": "9 AM - 5 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "Q": {
+   "turno": "9 AM - 4 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "R": {
+   "turno": "9  AM - 10 PM",
+   "horas": {
+    "H.E.D": 2,
+    "H.E.N": 3,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "S": {
+   "turno": "10 AM - 6 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "T": {
+   "turno": "10 AM   - 10 PM",
+   "horas": {
+    "H.E.D": 1,
+    "H.E.N": 3,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "U": {
+   "turno": "1 PM - 9 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 1,
+    "R.NOCTURNO": 2,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "V": {
+   "turno": "9 AM - 5 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "W": {
+   "turno": "11 AM - 7 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "A1": {
+   "turno": "1 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 1,
+    "R.NOCTURNO": 2,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "F1": {
+   "turno": "3 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 3,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "I1": {
+   "turno": "7 AM - 9 PM BICENTENARIO",
+   "horas": {
+    "H.E.D": 5,
+    "H.E.N": 2,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "J1": {
+   "turno": "9 AM - 1 PM/  6 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 5,
+    "R.D.N": 2,
+    "H.E.D.N": 1,
+    "H.E.D.D": 0
+   }
+  },
+  "K1": {
+   "turno": "9 AM - 4 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "L1": {
+   "turno": "9 AM  -2 PM/ 5 PM-10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 3,
+    "H.E.D.D": 0
+   }
+  },
+  "M1": {
+   "turno": "9 AM - 1 PM/  5 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 6,
+    "R.D.N": 1,
+    "H.E.D.N": 2,
+    "H.E.D.D": 0
+   }
+  },
+  "N1": {
+   "turno": "9 AM - 2 PM/ 7 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 5,
+    "R.D.N": 2,
+    "H.E.D.N": 1,
+    "H.E.D.D": 0
+   }
+  },
+  "O1": {
+   "turno": "9 AM -  10 PM -  DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 3,
+    "H.E.D.D": 2
+   }
+  },
+  "P1": {
+   "turno": "9 AM - 1 PM /  4 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 3,
+    "H.E.D.D": 0
+   }
+  },
+  "Q1": {
+   "turno": "9 AM  - 1 PM / 7 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 4,
+    "R.D.N": 3,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "R1": {
+   "turno": "10 AM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 3,
+    "H.E.D.D": 1
+   }
+  },
+  "S1": {
+   "turno": "10 AM - 6 PM  DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "T1": {
+   "turno": "11 AM -  7 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 7,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "U1": {
+   "turno": "1 PM - 10 PM DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 5,
+    "R.D.N": 2,
+    "H.E.D.N": 1,
+    "H.E.D.D": 0
+   }
+  },
+  "V1": {
+   "turno": "9 AM - 1 PM / 6 PM - 10 PM",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 1,
+    "R.NOCTURNO": 2,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "W1": {
+   "turno": "2 PM - 10 PM - DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 4,
+    "R.D.N": 3,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "A2": {
+   "turno": "3 PM - 10 PM -  DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 4,
+    "R.D.N": 3,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "B2": {
+   "turno": "1 PM - 9 PM - DOMINGO",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 6,
+    "R.D.N": 1,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "C2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "D2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "E2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "F2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "G2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "H2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "I2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "J2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "K2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "L2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "M2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "N2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "O2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "P2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "Q2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "R2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "S2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "T2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "U2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "V2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "W2": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "A3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "B3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "C3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "D3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "E3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "F3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "G3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "H3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "I3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "J3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "K3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "L3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "M3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "N3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  },
+  "O3": {
+   "turno": "",
+   "horas": {
+    "H.E.D": 0,
+    "H.E.N": 0,
+    "R.NOCTURNO": 0,
+    "R.D.D": 0,
+    "R.D.N": 0,
+    "H.E.D.N": 0,
+    "H.E.D.D": 0
+   }
+  }
+ },
+ "empleados_plantilla": [
+  {
+   "cedula": "22705114",
+   "nombre": "Cueto Ramos Ingrid Jhonna",
+   "punto": "Solofarma 1"
+  },
+  {
+   "cedula": "43584878",
+   "nombre": "Taborda Londoño Lina Patricia",
+   "punto": "Solofarma 2"
+  },
+  {
+   "cedula": "43692133",
+   "nombre": "Garcia Palencia Edith Florinda",
+   "punto": "Solofarma 3"
+  },
+  {
+   "cedula": "43904796",
+   "nombre": "Munera Garcia Monica Maria",
+   "punto": "Solofarma 4"
+  },
+  {
+   "cedula": "56098624",
+   "nombre": "Campo Lopez Adriana Maria",
+   "punto": "Solofarma 5"
+  },
+  {
+   "cedula": "70551493",
+   "nombre": "Vasquez Giron Esneider de Jesus",
+   "punto": "Solofarma 6"
+  },
+  {
+   "cedula": "70569992",
+   "nombre": "Sanchez Maya Juvenal",
+   "punto": ""
+  },
+  {
+   "cedula": "71717188",
+   "nombre": "Correa Vàsquez Francisco Josè",
+   "punto": ""
+  },
+  {
+   "cedula": "98498026",
+   "nombre": "Henao Muñoz Diego Arturo",
+   "punto": ""
+  },
+  {
+   "cedula": "98577161",
+   "nombre": "Urrea Giraldo Mario Alberto",
+   "punto": ""
+  },
+  {
+   "cedula": "98696981",
+   "nombre": "Duque Garcia John Alexander",
+   "punto": ""
+  },
+  {
+   "cedula": "98699450",
+   "nombre": "Buitrago Valencia Martin Alonso",
+   "punto": ""
+  },
+  {
+   "cedula": "1000194657",
+   "nombre": "Gañan Montoya Sebastian",
+   "punto": ""
+  },
+  {
+   "cedula": "1000446110",
+   "nombre": "Jaramillo Londoño Jose Manuel",
+   "punto": ""
+  },
+  {
+   "cedula": "1000456347",
+   "nombre": "Laverde Torres Jenifer Natalia",
+   "punto": ""
+  },
+  {
+   "cedula": "1000761939",
+   "nombre": "Montoya Higuita Bryan Andres",
+   "punto": ""
+  },
+  {
+   "cedula": "1001248624",
+   "nombre": "Guerra Acevedo Melany",
+   "punto": ""
+  },
+  {
+   "cedula": "1001724926",
+   "nombre": "Orrego Franco Jose de Jesús",
+   "punto": ""
+  },
+  {
+   "cedula": "1007283803",
+   "nombre": "Muñeton Ochoa  Yennifer Andrea",
+   "punto": ""
+  },
+  {
+   "cedula": "1007328591",
+   "nombre": "Muñeton ochoa Sulman Yurley",
+   "punto": ""
+  },
+  {
+   "cedula": "1017922576",
+   "nombre": "Restrepo Valderrama Samuel",
+   "punto": ""
+  },
+  {
+   "cedula": "1035433568",
+   "nombre": "Acevedo Echeverri Deicy Natalia",
+   "punto": ""
+  },
+  {
+   "cedula": "1036618798",
+   "nombre": "Peréz Bedoya Erika Juliana",
+   "punto": ""
+  },
+  {
+   "cedula": "1037593439",
+   "nombre": "Tangarife Correa Anderson Sneyder",
+   "punto": ""
+  },
+  {
+   "cedula": "1037607749",
+   "nombre": "López  Sotelo Caterine",
+   "punto": ""
+  },
+  {
+   "cedula": "1037671519",
+   "nombre": "Restrepo Riaza Paula Andrea",
+   "punto": ""
+  },
+  {
+   "cedula": "1038109472",
+   "nombre": "Silva Piñerez  Viviana Isabel",
+   "punto": ""
+  },
+  {
+   "cedula": "1038358213",
+   "nombre": "Posada Mesa Erica Vannesa",
+   "punto": ""
+  },
+  {
+   "cedula": "1041410064",
+   "nombre": "Munera Monsalve Lisveth Karina",
+   "punto": ""
+  },
+  {
+   "cedula": "1054919363",
+   "nombre": "Murillo Vasquez Andres Felipe",
+   "punto": ""
+  },
+  {
+   "cedula": "1066508855",
+   "nombre": "Osorio Oviedo Idania",
+   "punto": ""
+  },
+  {
+   "cedula": "1080021724",
+   "nombre": "Frias Florez Edwin José",
+   "punto": ""
+  },
+  {
+   "cedula": "1102825707",
+   "nombre": "Barrera Beltran Leonel Arturo",
+   "punto": ""
+  },
+  {
+   "cedula": "1120354380",
+   "nombre": "Londoño Avila Maira Alejandra",
+   "punto": ""
+  },
+  {
+   "cedula": "1127609039",
+   "nombre": "Moreno Payares Osnaider Andres",
+   "punto": ""
+  },
+  {
+   "cedula": "1152703555",
+   "nombre": "Quintero Lujan Denis Alejandra",
+   "punto": ""
+  },
+  {
+   "cedula": "1152712971",
+   "nombre": "Toro Gomez Juan Sebastian",
+   "punto": ""
+  },
+  {
+   "cedula": "1193122499",
+   "nombre": "Jimenez Loaiza Yeison Stiven",
+   "punto": ""
+  },
+  {
+   "cedula": "1001738439",
+   "nombre": "Pino Avendano Dayana Alejandra",
+   "punto": ""
+  },
+  {
+   "cedula": "1128470216",
+   "nombre": "Jimenez Cardona Diego Alexander",
+   "punto": ""
+  },
+  {
+   "cedula": "98496134",
+   "nombre": "Maldonado Jimenez Guillermo Alber",
+   "punto": ""
+  },
+  {
+   "cedula": "1020493836",
+   "nombre": "Lozano Garcia Joan Manuel",
+   "punto": ""
+  },
+  {
+   "cedula": "1036662731",
+   "nombre": "Luna Patiño Junior Alexander",
+   "punto": ""
+  },
+  {
+   "cedula": "1095936315",
+   "nombre": "Gomez Rueda Juliana Silva",
+   "punto": ""
+  },
+  {
+   "cedula": "1001753481",
+   "nombre": "Angie Niyered Agudelo",
+   "punto": ""
+  }
+ ],
+ "turnos": {
+  "A": "7 AM - 2 PM- BICENTENARIO",
+  "B1": "1 PM - 9 PM - BICENTENARIO",
+  "B": "1 PM - 8 PM DOMINGO",
+  "C1": "1 PM - 8 PM -  BICENTENARIO",
+  "C": "2 PM - 9 PM BICENTEANARIO",
+  "D1": "2 PM - 9 PM - BICENTENARIO",
+  "D": "8 AM - 3 PM- BICENTENARIO",
+  "E1": "2 PM - 10 PM - BICENTENARIO",
+  "E": "8 AM - 3 PM- BICENTENARIO DOMINGO",
+  "F1": "3 PM - 10 PM",
+  "F": "1 PM - 8 PM BICENTENARIO",
+  "G1": "8 AM - 8 PM - DOMINGO - BICENTENARIO",
+  "G": "8 AM - 4 PM",
+  "H1": "8 AM - 3 PM - DOMINGO - BICENTENARIO",
+  "H": "8 AM - 5 PM",
+  "I1": "9 AM - 5 PM - DOMINGO",
+  "I": "8 AM - 3 PM",
+  "J1": "9 AM - 1 PM/  6 PM - 10 PM DOMINGO",
+  "J": "8 AM - 8 PM BICENTENARIO DOMINGO (S.O.S)",
+  "K1": "9 AM - 4 PM DOMINGO",
+  "K": "8 AM - 7 PM",
+  "L1": "9 AM  -2 PM/ 5 PM-10 PM DOMINGO",
+  "L": "8 AM - 1 PM/ 5 PM - 10 PM",
+  "M1": "9 AM - 1 PM/  5 PM - 10 PM DOMINGO",
+  "M": "8 AM - 4 PM/ 7 PM - 10 PM",
+  "N1": "9 AM - 2 PM/ 7 PM - 10 PM DOMINGO",
+  "N": "8 AM - 1 PM/ 6 PM - 10 PM",
+  "O1": "9 AM -  10 PM -  DOMINGO",
+  "O": "8 AM - 1 PM/ 7 PM - 10 PM",
+  "P1": "9 AM - 1 PM /  4 PM - 10 PM DOMINGO",
+  "P": "9 AM - 5 PM",
+  "Q1": "9 AM  - 1 PM / 7 PM - 10 PM DOMINGO",
+  "Q": "9 AM - 4 PM",
+  "R1": "10 AM - 10 PM DOMINGO",
+  "R": "9  AM - 10 PM",
+  "S1": "10 AM - 6 PM  DOMINGO",
+  "S": "10 AM - 6 PM",
+  "T1": "11 AM -  7 PM DOMINGO",
+  "T": "10 AM   - 10 PM",
+  "U1": "1 PM - 10 PM DOMINGO",
+  "U": "11 PM   - 8 PM- BICENTENARIO",
+  "V1": "1 PM - 8 PM - DOMINGO BICENTENARIO",
+  "V": "11 AM - 1 PM/ 5 PM - 10 PM - BICENTENARIO",
+  "W1": "2 PM - 10 PM - DOMINGO",
+  "W": "11 AM - 7 PM",
+  "A2": "3 PM - 10 PM -  DOMINGO",
+  "A1": "1 PM - 10 PM",
+  "B2": "1 PM - 9 PM - DOMINGO"
+ },
+ "tarifas": {
+  "H.E.D": 10422,
+  "H.E.N": 14592,
+  "R.NOCTURNO": 2918,
+  "R.D.D": 7504,
+  "R.D.N": 10422,
+  "H.E.D.N": 22095,
+  "H.E.D.D": 17926
+ }
+}
