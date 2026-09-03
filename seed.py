@@ -3,7 +3,7 @@
 Uso:
     - Local (SQLite):        python seed.py
     - Produccion (Postgres):  set DATABASE_URL=postgresql://...  y luego python seed.py
-                              (o ejecútalo dentro del servicio de Render con un comando shell)
+                              (o ejecútalo dentro del servicio de Render con un comando shell)
 
 Crea: 6 sucursales, tabla de turnos completa (~45 turnos), usuarios admin demo.
 """
@@ -12,6 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import app, db
 from models import Sucursal, Empleado, Usuario, Turno
+
+# Nombres de las 6 sucursales, en orden (1 a 6)
+NOMBRES_SUCURSALES = ['SOLOFARMA NIQUIA', 'SOLOFARMA PRADO', 'SOLOFARMA GUANTEROS',
+                      'SOLOFARMA POSITIVA', 'SOLOFARMA BICENTENARIO', 'SOLOFARMA CASTILLA']
 
 # Tabla de turnos (codigo -> (descripcion, es_domingo))
 # Sincronizada con la hoja 'TURNO MODIFICADO' / 'TURNOS' del excel
@@ -103,12 +107,20 @@ def main():
         # ---- Migracion ligera de esquema (idempotente) ----
         _migrar_esquema()
 
-        # Sucursales (si no existen)
+        # Sucursales: crear las faltantes y renombrar las existentes en orden (1 a 6)
         if Sucursal.query.count() == 0:
-            for i in range(1, 7):
-                db.session.add(Sucursal(nombre=f'SOLOFARMA {i}'))
+            for nombre in NOMBRES_SUCURSALES:
+                db.session.add(Sucursal(nombre=nombre))
             db.session.commit()
             print('Sucursales creadas')
+        else:
+            existing = Sucursal.query.order_by(Sucursal.id).limit(len(NOMBRES_SUCURSALES)).all()
+            for i, s in enumerate(existing):
+                nuevo = NOMBRES_SUCURSALES[i]
+                if s.nombre != nuevo:
+                    s.nombre = nuevo
+            db.session.commit()
+            print('Sucursales renombradas')
 
         # Turnos: crear los faltantes y actualizar las descripciones de los existentes
         for codigo, desc, es_dom in TURNOS:

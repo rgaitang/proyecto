@@ -674,8 +674,9 @@ def generar_excel():
 def init_db():
     db.create_all()
     if Sucursal.query.count() == 0:
-        for i in range(1, 7):
-            db.session.add(Sucursal(nombre=f'SOLOFARMA {i}'))
+        from seed import NOMBRES_SUCURSALES
+        for nombre in NOMBRES_SUCURSALES:
+            db.session.add(Sucursal(nombre=nombre))
         db.session.commit()
         print('Sucursales creadas')
 
