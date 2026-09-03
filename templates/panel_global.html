@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Global - Carolina Sepúlveda</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 16px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar h1 { font-size: 20px; }
+        .topbar a, .topbar button { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
+                    padding: 7px 14px; border-radius: 6px; font-size: 14px; border: none; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        h2 { color: #333; margin: 20px 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .card { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+                text-decoration: none; color: inherit; display: block; border-left: 5px solid #1a73e8; transition: transform .15s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .card h3 { color: #0b57d0; margin-bottom: 8px; font-size: 17px; }
+        .card .stats { display: flex; gap: 16px; margin-top: 10px; }
+        .card .stat { font-size: 13px; color: #555; }
+        .card .stat b { font-size: 18px; color: #1a73e8; display: block; }
+        .actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .actions a { background: #1a73e8; color: #fff; padding: 11px 18px; border-radius: 6px;
+                     text-decoration: none; font-size: 14px; }
+        .actions a:hover { opacity: 0.9; }
+        .btn-danger { background: #d93025 !important; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Panel Global - RRHH</h1>
+        <div style="display:flex;gap:10px;">
+            <a href="{{ url_for('admin_empleados') }}">Empleados</a>
+            <a href="{{ url_for('admin_usuarios') }}">Usuarios</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <h2>Sucursales - {{ hoy.strftime('%B %Y') }}</h2>
+        <div class="grid">
+            {% for item in resumen %}
+            <a class="card" href="{{ url_for('panel_local', sucursal=item.sucursal.id) }}">
+                <h3>{{ item.sucursal.nombre }}</h3>
+                <div class="stats">
+                    <div class="stat"><b>{{ item.empleados }}</b> Empleados</div>
+                    <div class="stat"><b>{{ item.pendientes }}</b> Registros del mes</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="actions">
+            <a href="{{ url_for('crear_empleado') }}">+ Crear Empleado</a>
+            <a href="{{ url_for('crear_usuario') }}">+ Crear Usuario</a>
+        </div>
+    </div>
+</body>
+</html>

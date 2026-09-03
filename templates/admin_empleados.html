@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleados</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 14px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
+        th { background: #0b57d0; color: #fff; }
+        a.link { color: #1a73e8; text-decoration: none; }
+        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 6px;
+               text-decoration: none; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Empleados</h1>
+        <a href="{{ url_for('panel_global') }}">← Panel Global</a>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <a class="btn" href="{{ url_for('crear_empleado') }}">+ Nuevo Empleado</a>
+        <table>
+            <tr><th>#</th><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th></tr>
+            {% for emp in empleados %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ emp.cedula }}</td>
+                <td>{{ emp.nombre }}</td>
+                <td>{{ emp.cargo }}</td>
+                <td>{{ emp.sucursal_ref.nombre if emp.sucursal_ref else '-' }}</td>
+                <td>{{ emp.usuario.username if emp.usuario else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - {{ sucursal.nombre }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #0b57d0; color: #fff; padding: 14px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar h1 { font-size: 19px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
+                    padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        .flash.warning { background: #fef7e0; color: #b06000; }
+        h2 { color: #333; margin: 18px 0 10px; }
+        .controls { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                    display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .controls select, .controls button { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; }
+        .btn { background: #1a73e8; color: #fff; border: none; padding: 9px 16px; border-radius: 6px;
+               cursor: pointer; font-size: 14px; }
+        .btn-green { background: #137333; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06); font-size: 12px; }
+        .table-wrap { overflow-x: auto; }
+        th, td { padding: 6px; border: 1px solid #e0e0e0; text-align: center; }
+        th { background: #0b57d0; color: #fff; position: sticky; top: 0; }
+        td.emp { text-align: left; font-weight: 600; min-width: 120px; white-space: nowrap; }
+        td.dia { font-size: 10px; background: #f5f5f5; }
+        td.weekend { background: #fde8e8; }
+        select.turno { padding: 3px; border-radius: 3px; border: 1px solid #ccc; max-width: 70px; }
+        input[type=text] { padding: 3px; border-radius: 3px; border: 1px solid #ccc; width: 90px; font-size: 11px; }
+        .pendiente { background: #fff3cd !important; }
+        .estado-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        .est-pendiente { background: #fef7e0; color: #b06000; }
+        .est-aprobado { background: #e6f4ea; color: #137333; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Panel Administrador - {{ sucursal.nombre }} {% if es_global %}(Admin Global){% endif %}</h1>
+        <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <div class="controls">
+            <form method="GET" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                {% if es_global %}
+                <select name="sucursal">
+                    {% for s in sucursales %}
+                    <option value="{{ s.id }}" {% if s.id == sucursal.id %}selected{% endif %}>{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <select name="mes">
+                    {% for m in range(1,13) %}
+                    <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][m-1] }}</option>
+                    {% endfor %}
+                </select>
+                <select name="anio">
+                    {% for a in [2025,2026,2027] %}
+                    <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+                <select name="quincena">
+                    <option value="1" {% if quincena == 1 %}selected{% endif %}>Quincena 1 (1-15)</option>
+                    <option value="2" {% if quincena == 2 %}selected{% endif %}>Quincena 2 (16-fin)</option>
+                </select>
+                <button type="submit" class="btn">Filtrar</button>
+            </form>
+            <div style="margin-left:auto;">
+                <form method="POST" action="{{ url_for('generar_excel') }}" style="display:flex;gap:10px;align-items:center;">
+                    <input type="hidden" name="mes" value="{{ mes }}">
+                    <input type="hidden" name="anio" value="{{ anio }}">
+                    <input type="hidden" name="sucursal_id" value="{{ sucursal.id }}">
+                    <button type="submit" class="btn btn-green">Generar Excel SIIGO</button>
+                </form>
+            </div>
+        </div>
+
+        <h2>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][mes-1] }} - Quincena {{ quincena }} ({{ dias[0].day }}-{{ dias[-1].day }})</h2>
+        <div class="table-wrap">
+        <table>
+            <tr>
+                <th rowspan="2">Empleado</th>
+                {% for d in dias %}
+                <th>{{ d.day }}</th>
+                {% endfor %}
+                <th rowspan="2">Acciones</th>
+            </tr>
+            <tr>
+                {% for d in dias %}
+                <td class="dia {% if d.weekday() >= 5 %}weekend{% endif %}">{{ spanish_days[d.weekday()] }}</td>
+                {% endfor %}
+            </tr>
+            {% for emp in empleados %}
+            {% set emp_days = {} %}
+            {% for key, reg in registros.items() %}
+                {% if reg.empleado_ref.id == emp.id %}{% set _ = emp_days.update({reg.fecha.day: reg}) %}{% endif %}
+            {% endfor %}
+            <tr>
+                <td class="emp">{{ emp.nombre }}</td>
+                {% for d in dias %}
+                {% set reg = registros.get(d) %}
+                {% if reg and reg.empleado_ref.id == emp.id %}
+                <td class="{% if d.weekday() >= 5 %}weekend{% endif %} {% if reg.estado == 'pendiente' %}pendiente{% endif %}">
+                    <form method="POST" action="{{ url_for('admin_editar_turno') }}">
+                        <input type="hidden" name="empleado_id" value="{{ emp.id }}">
+                        <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
+                        <select name="turno" class="turno" onchange="this.form.submit()">
+                            <option value="">--</option>
+                            {% for t in turnos %}
+                            <option value="{{ t.codigo }}" {% if reg.turno_codigo == t.codigo %}selected{% endif %}>{{ t.codigo }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                {% else %}
+                <td class="{% if d.weekday() >= 5 %}weekend{% endif %}">
+                    <form method="POST" action="{{ url_for('admin_editar_turno') }}">
+                        <input type="hidden" name="empleado_id" value="{{ emp.id }}">
+                        <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
+                        <input type="hidden" name="turno" value="">
+                        <input type="hidden" name="observacion" value="">
+                    </form>
+                </td>
+                {% endif %}
+                {% endfor %}
+                <td style="min-width:80px;">
+                    {% set total = 0 %}{% for key, reg in registros.items() if reg.empleado_ref.id == emp.id %}{% set total = total + 1 %}{% endfor %}
+                    <span class="estado-tag">{{ total }} turnos</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        </div>
+    </div>
+</body>
+</html>
