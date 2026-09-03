@@ -351,6 +351,32 @@ def crear_empleado():
     return render_template('crear_empleado.html', sucursales=sucursales)
 
 
+@app.route('/admin/editar_empleado/<int:empleado_id>', methods=['GET', 'POST'])
+@rol_required('admin_global')
+def editar_empleado(empleado_id):
+    emp = db.session.get(Empleado, empleado_id)
+    if not emp:
+        flash('Empleado no encontrado', 'danger')
+        return redirect(url_for('admin_empleados'))
+    sucursales = Sucursal.query.order_by(Sucursal.nombre).all()
+    if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        cargo = request.form.get('cargo', '').strip()
+        sucursal_id = request.form.get('sucursal_id', type=int)
+        cedula = request.form.get('cedula', '').strip()
+
+        if nombre:
+            emp.nombre = nombre
+        emp.cargo = cargo
+        emp.cedula = cedula or emp.cedula
+        emp.sucursal_id = sucursal_id or None
+
+        db.session.commit()
+        flash('Empleado actualizado', 'success')
+        return redirect(url_for('admin_empleados'))
+    return render_template('editar_empleado.html', emp=emp, sucursales=sucursales)
+
+
 @app.route('/admin/crear_usuario', methods=['GET', 'POST'])
 @rol_required('admin_global')
 def crear_usuario():

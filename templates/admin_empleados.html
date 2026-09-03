@@ -35,7 +35,7 @@
         {% endwith %}
         <a class="btn" href="{{ url_for('crear_empleado') }}">+ Nuevo Empleado</a>
         <table>
-            <tr><th>#</th><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th></tr>
+            <tr><th>#</th><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th><th>Acciones</th></tr>
             {% for emp in empleados %}
             <tr>
                 <td>{{ loop.index }}</td>
@@ -44,6 +44,7 @@
                 <td>{{ emp.cargo }}</td>
                 <td>{{ emp.sucursal_ref.nombre if emp.sucursal_ref else '-' }}</td>
                 <td>{{ emp.usuario.username if emp.usuario else '-' }}</td>
+                <td><a class="link" href="{{ url_for('editar_empleado', empleado_id=emp.id) }}">Editar</a></td>
             </tr>
             {% endfor %}
         </table>
