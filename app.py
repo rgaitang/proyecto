@@ -434,6 +434,17 @@ def init_db():
         print('Sucursales creadas')
 
 
+# ---------------- Inicializacion al arrancar (para gunicorn app:app) ----------------
+# Crea las tablas y llena datos base (sucursales, turnos, admin, empleados) si la
+# base esta vacia. Esto garantiza el funcionamiento aunque Render use 'gunicorn app:app'
+# en lugar del start.sh. Es idempotente: solo actua cuando la BD esta vacia.
+with app.app_context():
+    db.create_all()
+    if Sucursal.query.count() == 0:
+        print('Base de datos vacia: ejecutando seed inicial...')
+        from seed import main as seed_main
+        seed_main()
+
 if __name__ == '__main__':
     with app.app_context():
         init_db()
