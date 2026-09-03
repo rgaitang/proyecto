@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novedades - {{ sucursal.nombre }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #0b57d0; color: #fff; padding: 14px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar h1 { font-size: 19px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
+                    padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        .card { background: #fff; padding: 24px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; color: #333; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 190px; }
+        button { background: #137333; color: #fff; border: none; padding: 12px 18px; border-radius: 6px;
+                 font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 18px; }
+        h2 { color: #333; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; font-size: 13px; }
+        th, td { padding: 9px; border: 1px solid #e0e0e0; text-align: left; }
+        th { background: #0b57d0; color: #fff; }
+        .tag { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .tipo { background: #e8f0fe; color: #0b57d0; }
+        .del { background: #fce8e6; color: #c5221f; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Novedades - {{ sucursal.nombre }} {% if es_global %}(Admin Global){% endif %}</h1>
+        <div>
+            {% if es_global %}
+            <form method="GET" style="display:inline-flex;gap:8px;align-items:center;">
+                <select name="sucursal" onchange="this.form.submit()">
+                    {% for s in sucursales %}
+                    <option value="{{ s.id }}" {% if s.id == sucursal.id %}selected{% endif %}>{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('panel_local', sucursal=sucursal.id) }}">Volver al panel</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <div class="card">
+            <h2>Registrar novedad</h2>
+            <form method="POST">
+                {% if es_global %}<input type="hidden" name="sucursal_id" value="{{ sucursal.id }}">{% endif %}
+                <div class="row">
+                    <div>
+                        <label>Empleado</label>
+                        <select name="empleado_id" required>
+                            <option value="">-- Selecciona --</option>
+                            {% for e in empleados %}
+                            <option value="{{ e.id }}">{{ e.nombre }} ({{ e.cedula }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Tipo de novedad</label>
+                        <select name="tipo" required>
+                            {% for t in tipos %}
+                            <option value="{{ t }}">{{ t }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label>Fecha inicio</label>
+                        <input type="date" name="fecha_inicio" value="{{ hoy.isoformat() }}" required>
+                    </div>
+                    <div>
+                        <label>Fecha fin (opcional)</label>
+                        <input type="date" name="fecha_fin">
+                    </div>
+                    <div>
+                        <label>Reporta (opcional)</label>
+                        <input type="text" name="reporta" placeholder="Quién reporta">
+                    </div>
+                </div>
+                <label>Descripción / Observaciones</label>
+                <textarea name="descripcion" rows="2" placeholder="Detalle de la novedad"></textarea>
+                <button type="submit">Guardar novedad</button>
+            </form>
+        </div>
+
+        <h2>Novedades registradas</h2>
+        {% if novedades %}
+        <table>
+            <tr><th>Fecha</th><th>Empleado</th><th>Tipo</th><th>Reporta</th><th>Descripción</th><th></th></tr>
+            {% for n in novedades %}
+            <tr>
+                <td>{{ n.fecha_inicio }}{% if n.fecha_fin and n.fecha_fin != n.fecha_inicio %} a {{ n.fecha_fin }}{% endif %}</td>
+                <td>{{ n.empleado_ref.nombre if n.empleado_ref else '-' }}</td>
+                <td><span class="tag tipo">{{ n.tipo }}</span></td>
+                <td>{{ n.reporta or '-' }}</td>
+                <td>{{ n.descripcion or '' }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('eliminar_novedad', novedad_id=n.id) }}" onsubmit="return confirm('¿Eliminar esta novedad?');">
+                        <button type="submit" class="del">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p style="color:#666;padding:10px 0;">No hay novedades registradas.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

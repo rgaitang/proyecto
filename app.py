@@ -87,6 +87,10 @@ def login():
         password = request.form.get('password', '')
         usuario = Usuario.query.filter_by(username=username).first()
         if usuario and usuario.check_password(password):
+            # Los empleados NO pueden iniciar sesión; solo admins (sucursal y global).
+            if usuario.rol == 'empleado':
+                flash('Los empleados no pueden iniciar sesión. Contacta a la administración.', 'danger')
+                return render_template('login.html')
             session['user_id'] = usuario.id
             session['username'] = usuario.username
             session['rol'] = usuario.rol
@@ -283,6 +287,100 @@ def admin_editar_turno():
     return redirect(request.referrer or url_for('panel_local'))
 
 
+# ---------------- Novedades (solo admin local / global) ----------------
+TIPOS_NOVEDAD = ['INCAPACIDAD', 'NO VINO', 'S-POSITIVA', 'INGRESO', 'RETIRO', 'CAMBIO_TURNO', 'VACACIONES', 'OTRO']
+
+
+@app.route('/nuevas_novedades', methods=['GET', 'POST'])
+@rol_required('admin_local', 'admin_global')
+def nuevas_novedades():
+    usuario = get_usuario_actual()
+    emp_admin = Empleado.query.filter_by(user_id=usuario.id).first()
+
+    def _sucursal_de_admin():
+        if usuario.rol == 'admin_local':
+            if not emp_admin or not emp_admin.sucursal_id:
+                return None
+            return emp_admin.sucursal_id
+        # admin global: elegir sucursal
+        return request.args.get('sucursal', type=int) or request.form.get('sucursal_id', type=int)
+
+    sucursal_id = _sucursal_de_admin()
+    if not sucursal_id:
+        flash('Tu sucursal no está configurada', 'danger')
+        return redirect(url_for('panel_local' if usuario.rol == 'admin_local' else 'panel_global'))
+
+    if request.method == 'POST':
+        empleado_id = request.form.get('empleado_id', type=int)
+        tipo = request.form.get('tipo')
+        fecha_inicio = request.form.get('fecha_inicio')
+        fecha_fin = request.form.get('fecha_fin') or None
+        descripcion = request.form.get('descripcion', '')
+        reporta = request.form.get('reporta', '')
+
+        target = db.session.get(Empleado, empleado_id)
+        if not target:
+            flash('Empleado no encontrado', 'danger')
+            return redirect(url_for('nuevas_novedades', sucursal=sucursal_id))
+
+        # Control: admin local solo su sucursal
+        if usuario.rol == 'admin_local' and target.sucursal_id != sucursal_id:
+            abort(403)
+
+        try:
+            f_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+        except Exception:
+            flash('Fecha de inicio inválida', 'danger')
+            return redirect(url_for('nuevas_novedades', sucursal=sucursal_id))
+
+        f_fin = None
+        if fecha_fin:
+            try:
+                f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            except Exception:
+                f_fin = None
+
+        n = Novedad(empleado_id=empleado_id, tipo=tipo, fecha_inicio=f_inicio,
+                    fecha_fin=f_fin, descripcion=descripcion, reporta=reporta,
+                    estado='pendiente')
+        db.session.add(n)
+        db.session.commit()
+        flash('Novedad registrada', 'success')
+        return redirect(url_for('nuevas_novedades', sucursal=sucursal_id))
+
+    # GET: mostrar formulario + listado de novedades de la sucursal
+    sucursal = db.session.get(Sucursal, sucursal_id)
+    empleados = Empleado.query.filter_by(sucursal_id=sucursal_id).order_by(Empleado.nombre).all()
+    novedades = Novedad.query.filter(Novedad.empleado_id.in_([e.id for e in empleados])) \
+        .order_by(Novedad.fecha_inicio.desc()).all() if empleados else []
+    emp_ids = {e.id for e in empleados}
+
+    return render_template('nuevas_novedades.html', sucursal=sucursal, empleados=empleados,
+                           novedades=novedades, tipos=TIPOS_NOVEDAD, emp_ids=emp_ids,
+                           es_global=(usuario.rol == 'admin_global'),
+                           sucursales=Sucursal.query.order_by(Sucursal.nombre).all(),
+                           hoy=date.today())
+
+
+@app.route('/eliminar_novedad/<int:novedad_id>', methods=['POST'])
+@rol_required('admin_local', 'admin_global')
+def eliminar_novedad(novedad_id):
+    usuario = get_usuario_actual()
+    emp_admin = Empleado.query.filter_by(user_id=usuario.id).first()
+    n = db.session.get(Novedad, novedad_id)
+    if not n:
+        flash('Novedad no encontrada', 'danger')
+        return redirect(request.referrer or url_for('panel_local'))
+    target = db.session.get(Empleado, n.empleado_id)
+    if usuario.rol == 'admin_local':
+        if not emp_admin or not target or target.sucursal_id != emp_admin.sucursal_id:
+            abort(403)
+    db.session.delete(n)
+    db.session.commit()
+    flash('Novedad eliminada', 'success')
+    return redirect(request.referrer or url_for('panel_local'))
+
+
 # ---------------- Panel Admin Global (Carolina) ----------------
 @app.route('/panel-global')
 @rol_required('admin_global')
@@ -380,20 +478,55 @@ def editar_empleado(empleado_id):
 @app.route('/admin/crear_usuario', methods=['GET', 'POST'])
 @rol_required('admin_global')
 def crear_usuario():
+    sucursales = Sucursal.query.order_by(Sucursal.nombre).all()
     if request.method == 'POST':
         username = request.form.get('username').strip()
         password = request.form.get('password')
         rol = request.form.get('rol')
+        sucursal_id = request.form.get('sucursal_id', type=int)
+        empleado_id = request.form.get('empleado_id', type=int)
+
         if Usuario.query.filter_by(username=username).first():
             flash('El usuario ya existe', 'danger')
             return redirect(url_for('crear_usuario'))
+
+        # Para admin_local y empleado, debe estar vinculado a una persona (empleado).
+        # El empleado define la sucursal a la que pertenece el usuario.
+        emp = None
+        if rol in ('admin_local', 'empleado'):
+            if not empleado_id:
+                flash('Selecciona la sede y el empleado para este usuario', 'danger')
+                return redirect(url_for('crear_usuario'))
+            emp = db.session.get(Empleado, empleado_id)
+            if not emp:
+                flash('Empleado no encontrado', 'danger')
+                return redirect(url_for('crear_usuario'))
+
         u = Usuario(username=username, rol=rol)
         u.set_password(password)
         db.session.add(u)
+        db.session.flush()
+
+        if emp:
+            emp.user_id = u.id
+            # admin_local: el empleado vinculado debe tener sucursal asignada
+            if rol == 'admin_local' and not emp.sucursal_id and sucursal_id:
+                emp.sucursal_id = sucursal_id
+
         db.session.commit()
         flash('Usuario creado', 'success')
         return redirect(url_for('admin_usuarios'))
-    return render_template('crear_usuario.html')
+    return render_template('crear_usuario.html', sucursales=sucursales)
+
+
+@app.route('/admin/empleados_por_sucursal')
+@rol_required('admin_global')
+def empleados_por_sucursal():
+    sucursal_id = request.args.get('sucursal_id', type=int)
+    if not sucursal_id:
+        return jsonify([])
+    empleados = Empleado.query.filter_by(sucursal_id=sucursal_id).order_by(Empleado.nombre).all()
+    return jsonify([{'id': e.id, 'nombre': e.nombre, 'cedula': e.cedula} for e in empleados])
 
 
 # ---------------- Generación de Excel para SIIGO ----------------

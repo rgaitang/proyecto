@@ -22,7 +22,7 @@
                     display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
         .controls select, .controls button { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; }
         .btn { background: #1a73e8; color: #fff; border: none; padding: 9px 16px; border-radius: 6px;
-               cursor: pointer; font-size: 14px; }
+               cursor: pointer; font-size: 14px; display: inline-block; text-decoration: none; }
         .btn-green { background: #137333; }
         .btn:hover { opacity: 0.9; }
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
@@ -78,7 +78,8 @@
                 </select>
                 <button type="submit" class="btn">Filtrar</button>
             </form>
-            <div style="margin-left:auto;">
+            <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                <a class="btn" href="{{ url_for('nuevas_novedades', sucursal=sucursal.id) }}">Novedades</a>
                 <form method="POST" action="{{ url_for('generar_excel') }}" style="display:flex;gap:10px;align-items:center;">
                     <input type="hidden" name="mes" value="{{ mes }}">
                     <input type="hidden" name="anio" value="{{ anio }}">

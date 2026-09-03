@@ -31,13 +31,14 @@
     <div class="container">
         <a class="btn" href="{{ url_for('crear_usuario') }}">+ Nuevo Usuario</a>
         <table>
-            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th></tr>
+            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th><th>Sucursal</th></tr>
             {% for u in usuarios %}
             <tr>
                 <td>{{ loop.index }}</td>
                 <td>{{ u.username }}</td>
                 <td><span class="rol rol-{{ u.rol }}">{{ u.rol }}</span></td>
                 <td>{{ u.empleado.nombre if u.empleado else '-' }}</td>
+                <td>{{ u.empleado.sucursal_ref.nombre if u.empleado and u.empleado.sucursal_ref else '-' }}</td>
             </tr>
             {% endfor %}
         </table>

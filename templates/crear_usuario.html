@@ -37,13 +37,63 @@
             <label>Contraseña</label>
             <input type="password" name="password" required>
             <label>Rol</label>
-            <select name="rol">
+            <select name="rol" id="rol">
                 <option value="empleado">Empleado</option>
                 <option value="admin_local">Administrador local (sucursal)</option>
                 <option value="admin_global">Administrador global (RRHH)</option>
             </select>
+
+            <div id="sucursal-block" style="display:none;">
+                <label>Sucursal / Sede</label>
+                <select name="sucursal_id" id="sucursal_id" onchange="cargarEmpleados()">
+                    <option value="">-- Selecciona una sede --</option>
+                    {% for s in sucursales %}
+                    <option value="{{ s.id }}">{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="empleado-block" style="display:none;">
+                <label>Empleado (persona que tendrá este acceso)</label>
+                <select name="empleado_id" id="empleado_id">
+                    <option value="">-- Elige una sede primero --</option>
+                </select>
+            </div>
+
             <button type="submit">Crear</button>
         </form>
     </div>
+    <script>
+        function mostrarSegunRol() {
+            var rol = document.getElementById('rol').value;
+            var necesitaSede = (rol === 'admin_local' || rol === 'empleado');
+            document.getElementById('sucursal-block').style.display = necesitaSede ? 'block' : 'none';
+            document.getElementById('empleado-block').style.display = necesitaSede ? 'block' : 'none';
+        }
+        function cargarEmpleados() {
+            var sucId = document.getElementById('sucursal_id').value;
+            var sel = document.getElementById('empleado_id');
+            sel.innerHTML = '<option value="">-- Cargando... --</option>';
+            if (!sucId) {
+                sel.innerHTML = '<option value="">-- Elige una sede primero --</option>';
+                return;
+            }
+            fetch('/admin/empleados_por_sucursal?sucursal_id=' + sucId)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.length) {
+                        sel.innerHTML = '<option value="">-- Sin empleados en esta sede --</option>';
+                        return;
+                    }
+                    var opts = '<option value="">-- Selecciona el empleado --</option>';
+                    data.forEach(function (e) {
+                        opts += '<option value="' + e.id + '">' + e.nombre + ' (' + e.cedula + ')</option>';
+                    });
+                    sel.innerHTML = opts;
+                });
+        }
+        document.getElementById('rol').addEventListener('change', mostrarSegunRol);
+        mostrarSegunRol();
+    </script>
 </body>
 </html>

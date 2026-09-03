@@ -113,6 +113,22 @@ def main():
             db.session.commit()
             print(f'{len(empleados)} empleados cargados desde JSON')
 
+        # Administradores de sucursal (admin1..admin6), uno por sede.
+        # Cada uno queda vinculado al primer empleado de su sucursal.
+        for n in range(1, 7):
+            username = f'admin{n}'
+            if not Usuario.query.filter_by(username=username).first():
+                empleado_sede = Empleado.query.filter_by(sucursal_id=n).first()
+                if empleado_sede:
+                    u = Usuario(username=username, rol='admin_local')
+                    u.set_password(os.environ.get(f'ADMIN{n}_PASS', 'admin123'))
+                    db.session.add(u)
+                    db.session.flush()
+                    empleado_sede.user_id = u.id
+                    print(f'Admin de sucursal creado: {username} -> {empleado_sede.nombre}')
+
+        db.session.commit()
+
         print('Seed completado.')
 
 

@@ -17,9 +17,9 @@ class Empleado(db.Model):
     cargo = db.Column(db.String(80), default='')
     sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id'))
 
-    # Relación con usuario de login
+    # Relación con usuario de login (uno a uno)
     user_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    usuario = db.relationship('Usuario', backref='empleado', uselist=False)
+    usuario = db.relationship('Usuario', uselist=False, back_populates='empleado')
 
     registros = db.relationship('RegistroHoras', backref='empleado_ref', lazy=True, cascade="all, delete-orphan")
 
@@ -30,6 +30,7 @@ class Usuario(db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     # Roles: 'admin_global' (Carolina), 'admin_local', 'empleado'
     rol = db.Column(db.String(20), nullable=False, default='empleado')
+    empleado = db.relationship('Empleado', uselist=False, back_populates='usuario')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -67,3 +68,4 @@ class Novedad(db.Model):
     descripcion = db.Column(db.String(300), default='')
     reporta = db.Column(db.String(120), default='')
     estado = db.Column(db.String(20), default='pendiente')
+    empleado_ref = db.relationship('Empleado', foreign_keys=[empleado_id])
