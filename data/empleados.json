@@ -1,0 +1,307 @@
+[
+  {
+    "nombre": "Ana Carolina Sepulveda",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Anadela Lopez",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Andres Felipe Murillo",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Bryan Andres Montoya",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Carlos Arturo Maya",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Caterine Lopez",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Cesar Alexander Urrego",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Daniel Mateo Gallego",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Deicy Natalia Acevedo",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Denis Alejandra Quintero",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Diana Osorio",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Diego Arturo Henao",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Edith Del Carmen Silva",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Edith Florinda Garcia",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Edwin Jose Frias",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Erica Vannesa Posada",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Erika Juliana Perez",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Esneider De Jesus Vasquez",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Francisco Jose Correa",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Horacio Enrique Sepulveda",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Idania Esther Osorio",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Ingrid Jhonna Cueto",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Jennifer Natalia Laverde",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "John Alexander Duque",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Jose De Jesus Orrego",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Jose Manuel Jaramillo",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Juvenal Sanchez",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Leonel Arturo Barrera",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Lina Patricia Taborda",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Lisveth Karina Munera",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Maira Alejandra Londoño",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Margarita Martinez",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Maria Isabel Orrego",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Mario Alberto Urrea",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Melany Guerra",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Milton Javier Baez",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Monica Maria Garcia",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Osnaider Andres Moreno",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Paula Andrea Restrepo",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Samuel Restrepo",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Sebastian Gañan",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Sebastian Loaiza",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Sulman Yurley Muñeton",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Thomas Cano",
+    "cargo": "",
+    "sucursal_id": 2
+  },
+  {
+    "nombre": "Viviana Isabel Silva",
+    "cargo": "",
+    "sucursal_id": 3
+  },
+  {
+    "nombre": "Yeison Stiven Jimenez",
+    "cargo": "",
+    "sucursal_id": 4
+  },
+  {
+    "nombre": "Yennifer Andrea Muñeton",
+    "cargo": "",
+    "sucursal_id": 5
+  },
+  {
+    "nombre": "Yudi Andrea Jimenez",
+    "cargo": "",
+    "sucursal_id": 6
+  },
+  {
+    "nombre": "Yurley Andrea Muñoz",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Margarita",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Melany",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Monica",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Adriana",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Karina",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Deicy",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Edwin",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Yennifer",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Andrea",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Dayana",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Edith",
+    "cargo": "",
+    "sucursal_id": 1
+  },
+  {
+    "nombre": "Angie",
+    "cargo": "",
+    "sucursal_id": 1
+  }
+]

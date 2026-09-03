@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Empleado</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 14px 24px; border-radius: 10px; margin-bottom: 20px;
+                  display: flex; justify-content: space-between; align-items: center; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; }
+        .box { max-width: 520px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; color: #333; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; margin-top: 20px; padding: 12px; background: #1a73e8; color: #fff; border: none;
+                 border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Nuevo Empleado</h1>
+        <a href="{{ url_for('admin_empleados') }}">← Volver</a>
+    </div>
+    <div class="box">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST">
+            <label>Cédula</label>
+            <input type="text" name="cedula" required>
+            <label>Nombre</label>
+            <input type="text" name="nombre" required>
+            <label>Cargo</label>
+            <input type="text" name="cargo">
+            <label>Sucursal</label>
+            <select name="sucursal_id">
+                {% for s in sucursales %}
+                <option value="{{ s.id }}">{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
+            <label>Usuario de acceso</label>
+            <input type="text" name="username" required>
+            <label>Contraseña</label>
+            <input type="password" name="password" required>
+            <button type="submit">Crear</button>
+        </form>
+    </div>
+</body>
+</html>

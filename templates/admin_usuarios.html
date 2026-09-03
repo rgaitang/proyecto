@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 14px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
+        th { background: #0b57d0; color: #fff; }
+        .rol { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .rol-admin_global { background: #041e49; color: #fff; }
+        .rol-admin_local { background: #1a73e8; color: #fff; }
+        .rol-empleado { background: #e8f0fe; color: #0b57d0; }
+        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 6px;
+               text-decoration: none; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Usuarios del Sistema</h1>
+        <a href="{{ url_for('panel_global') }}">← Panel Global</a>
+    </div>
+    <div class="container">
+        <a class="btn" href="{{ url_for('crear_usuario') }}">+ Nuevo Usuario</a>
+        <table>
+            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th></tr>
+            {% for u in usuarios %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ u.username }}</td>
+                <td><span class="rol rol-{{ u.rol }}">{{ u.rol }}</span></td>
+                <td>{{ u.empleado.nombre if u.empleado else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
