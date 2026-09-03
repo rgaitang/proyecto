@@ -63,6 +63,7 @@ class Novedad(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)  # INCAPACIDAD, VACACIONES, CAMBIO_TURNO, RETIRO, INGRESO, OTRO
+    codigo = db.Column(db.String(20), default='')  # Codigo de letra libre (ej. 'A', 'INCAPACIDAD')
     fecha_inicio = db.Column(db.Date, nullable=False)
     fecha_fin = db.Column(db.Date)
     descripcion = db.Column(db.String(300), default='')

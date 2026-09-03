@@ -80,6 +80,10 @@
                 </div>
                 <div class="row">
                     <div>
+                        <label>Código / letra para el Excel (opcional)</label>
+                        <input type="text" name="codigo" placeholder="Ej: A, INCAPACIDAD, NO VINO...">
+                    </div>
+                    <div>
                         <label>Fecha inicio</label>
                         <input type="date" name="fecha_inicio" value="{{ hoy.isoformat() }}" required>
                     </div>
@@ -87,13 +91,11 @@
                         <label>Fecha fin (opcional)</label>
                         <input type="date" name="fecha_fin">
                     </div>
-                    <div>
-                        <label>Reporta (opcional)</label>
-                        <input type="text" name="reporta" placeholder="Quién reporta">
-                    </div>
                 </div>
                 <label>Descripción / Observaciones</label>
                 <textarea name="descripcion" rows="2" placeholder="Detalle de la novedad"></textarea>
+                <label>Reporta (opcional)</label>
+                <input type="text" name="reporta" placeholder="Quién reporta">
                 <button type="submit">Guardar novedad</button>
             </form>
         </div>
@@ -101,12 +103,13 @@
         <h2>Novedades registradas</h2>
         {% if novedades %}
         <table>
-            <tr><th>Fecha</th><th>Empleado</th><th>Tipo</th><th>Reporta</th><th>Descripción</th><th></th></tr>
+            <tr><th>Fecha</th><th>Empleado</th><th>Tipo</th><th>Código</th><th>Reporta</th><th>Descripción</th><th></th></tr>
             {% for n in novedades %}
             <tr>
                 <td>{{ n.fecha_inicio }}{% if n.fecha_fin and n.fecha_fin != n.fecha_inicio %} a {{ n.fecha_fin }}{% endif %}</td>
                 <td>{{ n.empleado_ref.nombre if n.empleado_ref else '-' }}</td>
                 <td><span class="tag tipo">{{ n.tipo }}</span></td>
+                <td>{{ n.codigo or '-' }}</td>
                 <td>{{ n.reporta or '-' }}</td>
                 <td>{{ n.descripcion or '' }}</td>
                 <td>

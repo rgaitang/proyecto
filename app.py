@@ -313,6 +313,7 @@ def nuevas_novedades():
     if request.method == 'POST':
         empleado_id = request.form.get('empleado_id', type=int)
         tipo = request.form.get('tipo')
+        codigo = request.form.get('codigo', '').strip()
         fecha_inicio = request.form.get('fecha_inicio')
         fecha_fin = request.form.get('fecha_fin') or None
         descripcion = request.form.get('descripcion', '')
@@ -340,7 +341,7 @@ def nuevas_novedades():
             except Exception:
                 f_fin = None
 
-        n = Novedad(empleado_id=empleado_id, tipo=tipo, fecha_inicio=f_inicio,
+        n = Novedad(empleado_id=empleado_id, tipo=tipo, codigo=codigo, fecha_inicio=f_inicio,
                     fecha_fin=f_fin, descripcion=descripcion, reporta=reporta,
                     estado='pendiente')
         db.session.add(n)
@@ -519,6 +520,92 @@ def crear_usuario():
     return render_template('crear_usuario.html', sucursales=sucursales)
 
 
+@app.route('/admin/editar_usuario/<int:usuario_id>', methods=['GET', 'POST'])
+@rol_required('admin_global')
+def editar_usuario(usuario_id):
+    u = db.session.get(Usuario, usuario_id)
+    if not u:
+        flash('Usuario no encontrado', 'danger')
+        return redirect(url_for('admin_usuarios'))
+    sucursales = Sucursal.query.order_by(Sucursal.nombre).all()
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password')
+        rol = request.form.get('rol')
+        sucursal_id = request.form.get('sucursal_id', type=int)
+        empleado_id = request.form.get('empleado_id', type=int)
+
+        # Validar username unico (si se cambio)
+        if username and username != u.username:
+            if Usuario.query.filter_by(username=username).first():
+                flash('Ese nombre de usuario ya existe', 'danger')
+                return redirect(url_for('editar_usuario', usuario_id=usuario_id))
+            u.username = username
+
+        if rol:
+            u.rol = rol
+
+        if password:
+            if len(password) < 4:
+                flash('La contraseña debe tener al menos 4 caracteres', 'danger')
+                return redirect(url_for('editar_usuario', usuario_id=usuario_id))
+            u.set_password(password)
+
+        # Manejar vinculo con empleado
+        if rol in ('admin_local', 'empleado'):
+            if empleado_id:
+                emp = db.session.get(Empleado, empleado_id)
+                if emp:
+                    emp.user_id = u.id
+                    if rol == 'admin_local' and not emp.sucursal_id and sucursal_id:
+                        emp.sucursal_id = sucursal_id
+                    db.session.commit()
+                    flash('Usuario actualizado', 'success')
+                    return redirect(url_for('admin_usuarios'))
+            flash('Selecciona la sede y el empleado para este usuario', 'danger')
+            return redirect(url_for('editar_usuario', usuario_id=usuario_id))
+        else:
+            # admin_global: quitar vinculo a empleado si lo tenia (pierde la sede)
+            if u.empleado:
+                u.empleado.user_id = None
+
+        db.session.commit()
+        flash('Usuario actualizado', 'success')
+        return redirect(url_for('admin_usuarios'))
+
+    # GET: preparar datos para el formulario
+    emp_actual = u.empleado if u.empleado else None
+    sucursal_sel = emp_actual.sucursal_id if emp_actual else None
+    return render_template('editar_usuario.html', u=u, sucursales=sucursales,
+                           emp_actual=emp_actual, sucursal_sel=sucursal_sel,
+                           todos_tipos=['admin_global', 'admin_local', 'empleado'])
+
+
+@app.route('/cambiar_password', methods=['POST'])
+@login_required
+def cambiar_password():
+    usuario = get_usuario_actual()
+    actual = request.form.get('actual', '')
+    nueva = request.form.get('nueva', '')
+    confirmar = request.form.get('confirmar', '')
+
+    if not usuario.check_password(actual):
+        flash('La contraseña actual es incorrecta', 'danger')
+        return redirect(request.referrer or url_for('panel_local'))
+    if len(nueva) < 4:
+        flash('La nueva contraseña debe tener al menos 4 caracteres', 'danger')
+        return redirect(request.referrer or url_for('panel_local'))
+    if nueva != confirmar:
+        flash('Las contraseñas no coinciden', 'danger')
+        return redirect(request.referrer or url_for('panel_local'))
+
+    usuario.set_password(nueva)
+    db.session.commit()
+    flash('Contraseña actualizada', 'success')
+    return redirect(request.referrer or url_for('panel_local'))
+
+
 @app.route('/admin/empleados_por_sucursal')
 @rol_required('admin_global')
 def empleados_por_sucursal():
@@ -598,11 +685,8 @@ def init_db():
 # base esta vacia. Esto garantiza el funcionamiento aunque Render use 'gunicorn app:app'
 # en lugar del start.sh. Es idempotente: solo actua cuando la BD esta vacia.
 with app.app_context():
-    db.create_all()
-    if Sucursal.query.count() == 0:
-        print('Base de datos vacia: ejecutando seed inicial...')
-        from seed import main as seed_main
-        seed_main()
+    from seed import main as seed_main
+    seed_main()
 
 if __name__ == '__main__':
     with app.app_context():

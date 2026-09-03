@@ -53,6 +53,19 @@
           {% endfor %}
         {% endwith %}
 
+        <details style="background:#fff;padding:12px 15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:15px;">
+            <summary style="cursor:pointer;font-weight:600;color:#0b57d0;">Cambiar mi contraseña</summary>
+            <form method="POST" action="{{ url_for('cambiar_password') }}" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px;">
+                <div><label style="font-size:12px;font-weight:600;">Contraseña actual</label><br>
+                    <input type="password" name="actual" required style="padding:7px;border:1px solid #ccc;border-radius:5px;"></div>
+                <div><label style="font-size:12px;font-weight:600;">Nueva</label><br>
+                    <input type="password" name="nueva" required style="padding:7px;border:1px solid #ccc;border-radius:5px;"></div>
+                <div><label style="font-size:12px;font-weight:600;">Confirmar</label><br>
+                    <input type="password" name="confirmar" required style="padding:7px;border:1px solid #ccc;border-radius:5px;"></div>
+                <button type="submit" class="btn">Cambiar</button>
+            </form>
+        </details>
+
         <div class="controls">
             <form method="GET" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 {% if es_global %}

@@ -21,6 +21,8 @@
         .rol-empleado { background: #e8f0fe; color: #0b57d0; }
         .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 6px;
                text-decoration: none; margin: 15px 0; }
+        td a { color: #1a73e8; text-decoration: none; font-weight: 600; }
+        td a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -31,7 +33,7 @@
     <div class="container">
         <a class="btn" href="{{ url_for('crear_usuario') }}">+ Nuevo Usuario</a>
         <table>
-            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th><th>Sucursal</th></tr>
+            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th><th>Sucursal</th><th>Acciones</th></tr>
             {% for u in usuarios %}
             <tr>
                 <td>{{ loop.index }}</td>
@@ -39,6 +41,7 @@
                 <td><span class="rol rol-{{ u.rol }}">{{ u.rol }}</span></td>
                 <td>{{ u.empleado.nombre if u.empleado else '-' }}</td>
                 <td>{{ u.empleado.sucursal_ref.nombre if u.empleado and u.empleado.sucursal_ref else '-' }}</td>
+                <td><a href="{{ url_for('editar_usuario', usuario_id=u.id) }}">Editar</a></td>
             </tr>
             {% endfor %}
         </table>

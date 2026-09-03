@@ -14,10 +14,12 @@ from app import app, db
 from models import Sucursal, Empleado, Usuario, Turno
 
 # Tabla de turnos (codigo -> (descripcion, es_domingo))
+# Sincronizada con la hoja 'TURNO MODIFICADO' / 'TURNOS' del excel
+# 'HORARIOS PUNTOS DE VENTA SOLOFARMA.xlsx'
 TURNOS = [
     ('A', '7 AM - 2 PM- BICENTENARIO', False),
     ('B', '1 PM - 8 PM DOMINGO', True),
-    ('C', '2 PM - 9 PM- BICENTENARIO', False),
+    ('C', '2 PM - 9 PM BICENTENARIO', False),
     ('D', '8 AM - 3 PM- BICENTENARIO', False),
     ('E', '8 AM - 3 PM- BICENTENARIO DOMINGO', True),
     ('F', '1 PM - 8 PM BICENTENARIO', False),
@@ -27,6 +29,7 @@ TURNOS = [
     ('J', '8 AM - 8 PM BICENTENARIO DOMINGO (S.O.S)', True),
     ('K', '8 AM - 7 PM', False),
     ('L', '8 AM - 1 PM/ 5 PM - 10 PM', False),
+    ('M', 'NO TENER EN CUENTA', False),
     ('N', '8 AM - 1 PM/ 6 PM - 10 PM', False),
     ('O', '8 AM - 1 PM/ 7 PM - 10 PM', False),
     ('P', '9 AM - 5 PM', False),
@@ -39,10 +42,10 @@ TURNOS = [
     ('W', '11 AM - 7 PM', False),
     ('A1', '1 PM - 10 PM', False),
     ('F1', '3 PM - 10 PM', False),
-    ('I1', '7 AM - 9 PM BICENTENARIO', False),
+    ('I1', '7 AM - 9 PM - BICENTENARIO', False),
     ('J1', '9 AM - 1 PM/ 6 PM - 10 PM DOMINGO', True),
     ('K1', '9 AM - 4 PM DOMINGO', True),
-    ('L1', '9 AM - 2 PM/ 5 PM - 10 PM DOMINGO', True),
+    ('L1', '9 AM -2 PM/ 5 PM-10 PM DOMINGO', True),
     ('M1', '9 AM - 1 PM/ 5 PM - 10 PM DOMINGO', True),
     ('N1', '9 AM - 2 PM/ 7 PM - 10 PM DOMINGO', True),
     ('O1', '9 AM - 10 PM - DOMINGO', True),
@@ -56,10 +59,12 @@ TURNOS = [
     ('W1', '2 PM - 10 PM - DOMINGO', True),
     ('A2', '3 PM - 10 PM - DOMINGO', True),
     ('B2', '1 PM - 9 PM - DOMINGO', True),
-    ('Z', 'Descanso', False),
-    ('S-positiva', 'S-positiva', False),
+    ('Z', 'HORARIO MARGARITA', False),
+    # Novedades (codigos de letra para novedades en el Excel SIIGO)
     ('INCAPACIDAD', 'Incapacidad', False),
     ('NO VINO', 'No vino', False),
+    ('S-POSITIVA', 'S-Positiva (permiso/cita)', False),
+    ('VACACIONES', 'Vacaciones', False),
 ]
 
 
@@ -73,9 +78,30 @@ def cargar_empleados_json():
     return []
 
 
+def _migrar_esquema():
+    """Agrega columnas faltantes a tablas existentes (compatible SQLite y PostgreSQL)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'novedad' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('novedad')}
+        if 'codigo' not in cols:
+            db.session.execute(text('ALTER TABLE novedad ADD COLUMN codigo VARCHAR(20) DEFAULT \'\''))
+            db.session.commit()
+            print('Migracion: columna codigo agregada a novedad')
+    if 'usuario' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('usuario')}
+        if 'rol' not in cols:
+            db.session.execute(text('ALTER TABLE usuario ADD COLUMN rol VARCHAR(20) DEFAULT \'empleado\''))
+            db.session.commit()
+            print('Migracion: columna rol agregada a usuario')
+
+
 def main():
     with app.app_context():
         db.create_all()
+
+        # ---- Migracion ligera de esquema (idempotente) ----
+        _migrar_esquema()
 
         # Sucursales (si no existen)
         if Sucursal.query.count() == 0:
@@ -84,12 +110,17 @@ def main():
             db.session.commit()
             print('Sucursales creadas')
 
-        # Turnos (si no existen)
-        if Turno.query.count() == 0:
-            for codigo, desc, es_dom in TURNOS:
+        # Turnos: crear los faltantes y actualizar las descripciones de los existentes
+        for codigo, desc, es_dom in TURNOS:
+            t = Turno.query.filter_by(codigo=codigo).first()
+            if t:
+                if t.descripcion != desc or t.es_domingo != es_dom:
+                    t.descripcion = desc
+                    t.es_domingo = es_dom
+            else:
                 db.session.add(Turno(codigo=codigo, descripcion=desc, es_domingo=es_dom))
-            db.session.commit()
-            print(f'{len(TURNOS)} turnos creados')
+        db.session.commit()
+        print(f'{len(TURNOS)} turnos garantizados')
 
         # Usuario admin global (si no existe)
         if not Usuario.query.filter_by(username='carolina').first():
