@@ -68,7 +68,11 @@
     </div>
     <div class="container">
         <div class="nav">
+            {% if es_global %}
+            <a class="btn btn-outline" href="{{ url_for('panel_global') }}">🏠 Panel Global</a>
+            {% else %}
             <a class="btn btn-outline" href="{{ url_for('panel_local') }}">🏠 Inicio</a>
+            {% endif %}
             <a class="btn btn-outline" href="{{ url_for('nuevas_novedades', sucursal=sucursal.id) }}">📋 Novedades</a>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
