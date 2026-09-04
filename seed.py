@@ -186,6 +186,69 @@ def _cargar_cedulas_reales():
         print(f'Cedulas reales actualizadas: {cambios} empleados')
 
 
+def _limpiar_empleados_duplicados():
+    """Elimina empleados que quedaron sin cedula_real y sin estar vinculados a un
+    usuario de login (los nombres cortos/duplicados que no matchean a la plantilla).
+    Conserva siempre a los 6 administradores de sucursal y a Carolina. Idempotente:
+    si no hay candidatos, no hace nada."""
+    import unicodedata
+
+    def normalizar(s):
+        s = unicodedata.normalize('NFD', s.lower())
+        s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+        s = s.replace('ñ', 'n')
+        return ' '.join(p for p in s.split() if p)
+
+    # Nombres completos que ya tienen match con cédula real (no se deben tocar)
+    nombres_completos = {
+        normalizar(n) for n in [
+            'Andres Felipe Murillo', 'Bryan Andres Montoya', 'Caterine Lopez',
+            'Deicy Natalia Acevedo', 'Denis Alejandra Quintero', 'Diego Arturo Henao',
+            'Edith Florinda Garcia', 'Edwin Jose Frias', 'Erica Vannesa Posada',
+            'Erika Juliana Perez', 'Esneider De Jesus Vasquez', 'Francisco Jose Correa',
+            'Idania Esther Osorio', 'Ingrid Jhonna Cueto', 'Jennifer Natalia Laverde',
+            'John Alexander Duque', 'Jose De Jesus Orrego', 'Jose Manuel Jaramillo',
+            'Juvenal Sanchez', 'Leonel Arturo Barrera', 'Lina Patricia Taborda',
+            'Lisveth Karina Munera', 'Maira Alejandra Londono', 'Mario Alberto Urrea',
+            'Melany Guerra', 'Monica Maria Garcia', 'Osnaider Andres Moreno',
+            'Paula Andrea Restrepo', 'Samuel Restrepo', 'Sebastian Ganan',
+            'Sulman Yurley Muneton', 'Viviana Isabel Silva', 'Yeison Stiven Jimenez',
+            'Yennifer Andrea Muneton',
+        ]
+    }
+
+    candidatos = []
+    for emp in Empleado.query.all():
+        # Conservar empleados de login (admin) y a los que ya tienen cedula real
+        if emp.user_id is not None:
+            continue
+        if emp.cedula_real:
+            continue
+        # Conservar empleados cuyo nombre es un 'nombre completo' (aunque no matcheen)
+        if normalizar(emp.nombre) in nombres_completos:
+            continue
+        # Candidato a eliminar: nombre corto/duplicado sin cedula real
+        candidatos.append(emp)
+
+    if not candidatos:
+        print('Limpieza: no hay empleados duplicados que eliminar')
+        return
+
+    # Eliminar dependencias primero (novedades y registros) para no violar FK
+    for emp in candidatos:
+        try:
+            from models import Novedad, RegistroHoras
+            Novedad.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+            RegistroHoras.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+            db.session.delete(emp)
+        except Exception as e:
+            db.session.rollback()
+            print(f'  [skip] {emp.nombre}: {e}')
+    db.session.commit()
+    print(f'Limpieza: {len(candidatos)} empleados duplicados eliminados: ' +
+          ', '.join(e.nombre for e in candidatos))
+
+
 def main():
     with app.app_context():
         db.create_all()
@@ -262,6 +325,9 @@ def main():
 
         # Asignar cedulas/ nombres reales desde la plantilla (idempotente)
         _cargar_cedulas_reales()
+
+        # Limpiar empleados duplicados/nombres cortos sin cedula real (idempotente)
+        _limpiar_empleados_duplicados()
 
 
 if __name__ == '__main__':
