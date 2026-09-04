@@ -19,9 +19,11 @@
         .rol-admin_global { background: #041e49; color: #fff; }
         .rol-admin_local { background: #1a73e8; color: #fff; }
         .rol-empleado { background: #e8f0fe; color: #0b57d0; }
-        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 6px;
+        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 8px;
                text-decoration: none; margin: 15px 0; }
-        td a { color: #1a73e8; text-decoration: none; font-weight: 600; }
+        .btn-danger { background: #d93025; color: #fff; border: none; padding: 6px 12px; border-radius: 6px;
+                      cursor: pointer; font-size: 13px; }
+        td a { color: #1a73e8; text-decoration: none; font-weight: 600; margin-right: 10px; }
         td a:hover { text-decoration: underline; }
     </style>
 </head>
@@ -41,7 +43,15 @@
                 <td><span class="rol rol-{{ u.rol }}">{{ u.rol }}</span></td>
                 <td>{{ u.empleado.nombre if u.empleado else '-' }}</td>
                 <td>{{ u.empleado.sucursal_ref.nombre if u.empleado and u.empleado.sucursal_ref else '-' }}</td>
-                <td><a href="{{ url_for('editar_usuario', usuario_id=u.id) }}">Editar</a></td>
+                <td>
+                    <a href="{{ url_for('editar_usuario', usuario_id=u.id) }}">Editar</a>
+                    {% if u.username != 'carolina' %}
+                    <form method="POST" action="{{ url_for('eliminar_usuario', usuario_id=u.id) }}"
+                          style="display:inline;" onsubmit="return confirm('¿Eliminar al usuario {{ u.username|e }}?');">
+                        <button type="submit" class="btn-danger">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>

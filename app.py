@@ -582,6 +582,44 @@ def editar_usuario(usuario_id):
                            todos_tipos=['admin_global', 'admin_local', 'empleado'])
 
 
+@app.route('/admin/eliminar_empleado/<int:empleado_id>', methods=['POST'])
+@rol_required('admin_global')
+def eliminar_empleado(empleado_id):
+    emp = db.session.get(Empleado, empleado_id)
+    if not emp:
+        flash('Empleado no encontrado', 'danger')
+        return redirect(url_for('admin_empleados'))
+    if emp.usuario:
+        flash('No se puede eliminar: el empleado tiene un usuario de login asociado', 'danger')
+        return redirect(url_for('admin_empleados'))
+    nombre = emp.nombre
+    RegistroHoras.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+    Novedad.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+    db.session.delete(emp)
+    db.session.commit()
+    flash(f'Empleado "{nombre}" eliminado', 'success')
+    return redirect(url_for('admin_empleados'))
+
+
+@app.route('/admin/eliminar_usuario/<int:usuario_id>', methods=['POST'])
+@rol_required('admin_global')
+def eliminar_usuario(usuario_id):
+    u = db.session.get(Usuario, usuario_id)
+    if not u:
+        flash('Usuario no encontrado', 'danger')
+        return redirect(url_for('admin_usuarios'))
+    if u.username == 'carolina':
+        flash('No se puede eliminar la cuenta principal (carolina)', 'danger')
+        return redirect(url_for('admin_usuarios'))
+    username = u.username
+    if u.empleado:
+        u.empleado.user_id = None
+    db.session.delete(u)
+    db.session.commit()
+    flash(f'Usuario "{username}" eliminado', 'success')
+    return redirect(url_for('admin_usuarios'))
+
+
 @app.route('/cambiar_password', methods=['POST'])
 @login_required
 def cambiar_password():

@@ -11,15 +11,18 @@
                   display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
-        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
+        .flash.success { background: #e6f4ea; color: #137333; border-left: 4px solid #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; border-left: 4px solid #c5221f; }
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
         th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
         th { background: #0b57d0; color: #fff; }
-        a.link { color: #1a73e8; text-decoration: none; }
-        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 6px;
+        a.link { color: #1a73e8; text-decoration: none; margin-right: 10px; }
+        .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 8px;
                text-decoration: none; margin: 15px 0; }
+        .btn-danger { background: #d93025; color: #fff; border: none; padding: 6px 12px; border-radius: 6px;
+                      cursor: pointer; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -35,16 +38,24 @@
         {% endwith %}
         <a class="btn" href="{{ url_for('crear_empleado') }}">+ Nuevo Empleado</a>
         <table>
-            <tr><th>#</th><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th><th>Acciones</th></tr>
+            <tr><th>#</th><th>Cédula Real</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th><th>Acciones</th></tr>
             {% for emp in empleados %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ emp.cedula }}</td>
-                <td>{{ emp.nombre }}</td>
+                <td>{{ emp.cedula_real or emp.cedula }}</td>
+                <td>{{ emp.nombre_real or emp.nombre }}</td>
                 <td>{{ emp.cargo }}</td>
                 <td>{{ emp.sucursal_ref.nombre if emp.sucursal_ref else '-' }}</td>
                 <td>{{ emp.usuario.username if emp.usuario else '-' }}</td>
-                <td><a class="link" href="{{ url_for('editar_empleado', empleado_id=emp.id) }}">Editar</a></td>
+                <td>
+                    <a class="link" href="{{ url_for('editar_empleado', empleado_id=emp.id) }}">Editar</a>
+                    {% if not emp.usuario %}
+                    <form method="POST" action="{{ url_for('eliminar_empleado', empleado_id=emp.id) }}"
+                          style="display:inline;" onsubmit="return confirm('¿Eliminar a {{ emp.nombre|e }}?');">
+                        <button type="submit" class="btn-danger">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
