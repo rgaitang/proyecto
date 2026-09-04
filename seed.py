@@ -249,6 +249,59 @@ def _limpiar_empleados_duplicados():
           ', '.join(e.nombre for e in candidatos))
 
 
+def _vincular_carolina_y_regente():
+    """Corrige las vinculaciones de login:
+    - carolina (admin_global) queda vinculada al empleado 'Ana Carolina Sepulveda'.
+    - admin1 (admin_local de NIQUIA) queda vinculado al regente 'Jose De Jesus Orrego'.
+    Idempotente: si ya están correctas, no hace cambios."""
+    cambios = []
+
+    carolina = Usuario.query.filter_by(username='carolina').first()
+    admin1 = Usuario.query.filter_by(username='admin1').first()
+
+    # --- carolina -> 'Ana Carolina Sepulveda' ---
+    if carolina:
+        ana = Empleado.query.filter_by(nombre='Ana Carolina Sepulveda').first()
+        if ana and ana.user_id != carolina.id:
+            # quitar a 'Ana Carolina Sepulveda' de cualquier otro usuario de login
+            if ana.user_id and ana.user_id != carolina.id:
+                otro = db.session.get(Usuario, ana.user_id)
+                if otro:
+                    cambios.append(f"'Ana Carolina Sepulveda' desvinculada de {otro.username}")
+            ana.user_id = carolina.id
+            cambios.append("'carolina' vinculada a 'Ana Carolina Sepulveda'")
+        # si carolina tenia otro empleado vinculado, dejarlo
+        carolina_emp = Empleado.query.filter_by(user_id=carolina.id).all()
+        for emp in carolina_emp:
+            if emp.id != (ana.id if ana else -1):
+                emp.user_id = None
+
+    # --- admin1 -> regente 'Jose De Jesus Orrego' ---
+    if admin1:
+        regente = Empleado.query.filter_by(nombre='Jose De Jesus Orrego').first()
+        if regente:
+            if regente.user_id != admin1.id:
+                if regente.user_id:
+                    otro = db.session.get(Usuario, regente.user_id)
+                    if otro:
+                        cambios.append(f"'Jose De Jesus Orrego' desvinculado de {otro.username}")
+                # asegurar que admin1 no quede vinculado a otro empleado
+                for emp in Empleado.query.filter_by(user_id=admin1.id).all():
+                    if emp.id != regente.id:
+                        emp.user_id = None
+                        cambios.append(f"admin1 desvinculado de '{emp.nombre}'")
+                regente.user_id = admin1.id
+                cambios.append("admin1 vinculado al regente 'Jose De Jesus Orrego'")
+
+    if cambios:
+        db.session.commit()
+        print('Vinculaciones corregidas:')
+        for c in cambios:
+            print('  -', c)
+    else:
+        print('Vinculaciones ya correctas')
+
+
 def main():
     with app.app_context():
         db.create_all()
@@ -328,6 +381,9 @@ def main():
 
         # Limpiar empleados duplicados/nombres cortos sin cedula real (idempotente)
         _limpiar_empleados_duplicados()
+
+        # Corregir vinculaciones: carolina -> Ana Carolina Sepulveda, admin1 -> regente
+        _vincular_carolina_y_regente()
 
 
 if __name__ == '__main__':
