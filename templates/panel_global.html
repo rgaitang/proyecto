@@ -6,36 +6,46 @@
     <title>Panel Global - Carolina Sepúlveda</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .topbar { background: #041e49; color: #fff; padding: 16px 24px; border-radius: 10px;
-                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .topbar h1 { font-size: 20px; }
-        .topbar a, .topbar button { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
-                    padding: 7px 14px; border-radius: 6px; font-size: 14px; border: none; cursor: pointer; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
-        .flash.success { background: #e6f4ea; color: #137333; }
-        .flash.danger { background: #fce8e6; color: #c5221f; }
-        h2 { color: #333; margin: 20px 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; padding: 24px; color: #1f2937; }
+        .topbar { background: linear-gradient(135deg, #0b57d0, #1a73e8); color: #fff; padding: 16px 26px;
+                  border-radius: 14px; display: flex; justify-content: space-between; align-items: center;
+                  margin-bottom: 20px; box-shadow: 0 6px 20px rgba(11,87,208,0.25); gap: 16px; }
+        .topbar h1 { font-size: 19px; font-weight: 600; flex: 1; }
+        .topbar a, .topbar button { color: #fff; text-decoration: none; background: rgba(255,255,255,0.18);
+                    padding: 8px 16px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer;
+                    transition: background .2s; }
+        .topbar a:hover, .topbar button:hover { background: rgba(255,255,255,0.3); }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
+        .flash.success { background: #e6f4ea; color: #137333; border-left: 4px solid #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; border-left: 4px solid #c5221f; }
+        h2 { color: #111827; margin: 20px 0 10px; font-size: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .card { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-                text-decoration: none; color: inherit; display: block; border-left: 5px solid #1a73e8; transition: transform .15s; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+                text-decoration: none; color: inherit; display: block; border-left: 5px solid #1a73e8;
+                transition: transform .15s, box-shadow .15s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,0.14); }
         .card h3 { color: #0b57d0; margin-bottom: 8px; font-size: 17px; }
         .card .stats { display: flex; gap: 16px; margin-top: 10px; }
         .card .stat { font-size: 13px; color: #555; }
         .card .stat b { font-size: 18px; color: #1a73e8; display: block; }
+        .nav { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .nav .btn-outline { background: #fff; color: #0b57d0; border: 1.5px solid #0b57d0; }
+        .nav .btn-outline:hover { background: #e8f0fe; }
         .actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
-        .actions a { background: #1a73e8; color: #fff; padding: 11px 18px; border-radius: 6px;
-                     text-decoration: none; font-size: 14px; }
-        .actions a:hover { opacity: 0.9; }
+        .actions a { background: #1a73e8; color: #fff; padding: 11px 18px; border-radius: 8px;
+                     text-decoration: none; font-size: 14px; font-weight: 600; transition: all .2s; }
+        .actions a:hover { background: #1558b0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.3); }
         .btn-danger { background: #d93025 !important; }
     </style>
 </head>
 <body>
     <div class="topbar">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="SOLOFARMA"
+             style="max-height:40px; border-radius:6px;">
         <h1>Panel Global - RRHH</h1>
-        <div style="display:flex;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+            <a href="{{ url_for('panel_global') }}">🏠 Inicio</a>
             <a href="{{ url_for('admin_empleados') }}">Empleados</a>
             <a href="{{ url_for('admin_usuarios') }}">Usuarios</a>
             <a href="{{ url_for('logout') }}">Cerrar sesión</a>
