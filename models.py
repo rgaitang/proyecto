@@ -14,6 +14,8 @@ class Empleado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cedula = db.Column(db.String(20), unique=True, nullable=False)
     nombre = db.Column(db.String(120), nullable=False)
+    cedula_real = db.Column(db.String(20), nullable=True)
+    nombre_real = db.Column(db.String(120), nullable=True)
     cargo = db.Column(db.String(80), default='')
     sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id'))
 

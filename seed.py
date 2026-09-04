@@ -98,6 +98,92 @@ def _migrar_esquema():
             db.session.execute(text('ALTER TABLE usuario ADD COLUMN rol VARCHAR(20) DEFAULT \'empleado\''))
             db.session.commit()
             print('Migracion: columna rol agregada a usuario')
+    if 'empleado' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('empleado')}
+        if 'cedula_real' not in cols:
+            db.session.execute(text('ALTER TABLE empleado ADD COLUMN cedula_real VARCHAR(20)'))
+            db.session.commit()
+            print('Migracion: columna cedula_real agregada a empleado')
+        if 'nombre_real' not in cols:
+            db.session.execute(text('ALTER TABLE empleado ADD COLUMN nombre_real VARCHAR(120)'))
+            db.session.commit()
+            print('Migracion: columna nombre_real agregada a empleado')
+
+
+def _cargar_cedulas_reales():
+    """Asigna cedula_real / nombre_real a los empleados del sistema usando la
+    lista real de la hoja DATOS de la plantilla. Idempotente: solo actualiza
+    cuando el valor difiere. Los empleados sin match quedan sin cedula real."""
+    import unicodedata
+
+    def normalizar(s):
+        s = unicodedata.normalize('NFD', s.lower())
+        s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+        s = s.replace('ñ', 'n')
+        return ' '.join(p for p in s.split() if p)
+
+    mapeo = {
+        # matches automaticos (2+ palabras)
+        'andres felipe murillo': ('1054919363', 'Murillo Vasquez Andres Felipe'),
+        'bryan andres montoya': ('1000761939', 'Montoya Higuita Bryan Andres'),
+        'caterine lopez': ('1037607749', 'Lopez Sotelo Caterine'),
+        'deicy natalia acevedo': ('1035433568', 'Acevedo Echeverri Deicy Natalia'),
+        'denis alejandra quintero': ('1152703555', 'Quintero Lujan Denis Alejandra'),
+        'diego arturo henao': ('98498026', 'Henao Munoz Diego Arturo'),
+        'edith florinda garcia': ('43692133', 'Garcia Palencia Edith Florinda'),
+        'edwin jose frias': ('1080021724', 'Frias Florez Edwin Jose'),
+        'erica vannesa posada': ('1038358213', 'Posada Mesa Erica Vannesa'),
+        'erika juliana perez': ('1036618798', 'Perez Bedoya Erika Juliana'),
+        'esneider de jesus vasquez': ('70551493', 'Vasquez Giron Esneider de Jesus'),
+        'francisco jose correa': ('71717188', 'Correa Vasquez Francisco Jose'),
+        'idania esther osorio': ('1066508855', 'Osorio Oviedo Idania'),
+        'ingrid jhonna cueto': ('22705114', 'Cueto Ramos Ingrid Jhonna'),
+        'jennifer natalia laverde': ('1000456347', 'Laverde Torres Jenifer Natalia'),
+        'john alexander duque': ('98696981', 'Duque Garcia John Alexander'),
+        'jose de jesus orrego': ('1001724926', 'Orrego Franco Jose de Jesus'),
+        'jose manuel jaramillo': ('1000446110', 'Jaramillo Londoño Jose Manuel'),
+        'juvenal sanchez': ('70569992', 'Sanchez Maya Juvenal'),
+        'leonel arturo barrera': ('1102825707', 'Barrera Beltran Leonel Arturo'),
+        'lina patricia taborda': ('43584878', 'Taborda Londoño Lina Patricia'),
+        'lisveth karina munera': ('1041410064', 'Munera Monsalve Lisveth Karina'),
+        'maira alejandra londono': ('1120354380', 'Londoño Avila Maira Alejandra'),
+        'mario alberto urrea': ('98577161', 'Urrea Giraldo Mario Alberto'),
+        'melany guerra': ('1001248624', 'Guerra Acevedo Melany'),
+        'monica maria garcia': ('43904796', 'Munera Garcia Monica Maria'),
+        'osnaider andres moreno': ('1127609039', 'Moreno Payares Osnaider Andres'),
+        'paula andrea restrepo': ('1037671519', 'Restrepo Riaza Paula Andrea'),
+        'samuel restrepo': ('1017922576', 'Restrepo Valderrama Samuel'),
+        'sebastian ganan': ('1000194657', 'Ganan Montoya Sebastian'),
+        'sulman yurley muneton': ('1007328591', 'Muneton ochoa Sulman Yurley'),
+        'viviana isabel silva': ('1038109472', 'Silva Piñerez Viviana Isabel'),
+        'yeison stiven jimenez': ('1193122499', 'Jimenez Loaiza Yeison Stiven'),
+        'yennifer andrea muneton': ('1007283803', 'Muneton Ochoa Yennifer Andrea'),
+        # nombres cortos de NIQUIA (confirmados por el usuario)
+        'adriana': ('56098624', 'Campo Lopez Adriana Maria'),
+        'andrea': ('56098624', 'Campo Lopez Adriana Maria'),
+        'edwin': ('1080021724', 'Frias Florez Edwin Jose'),
+        'monica': ('43904796', 'Munera Garcia Monica Maria'),
+        'melany': ('1001248624', 'Guerra Acevedo Melany'),
+        'deicy': ('1035433568', 'Acevedo Echeverri Deicy Natalia'),
+        'dayana': ('1001738439', 'Pino Avendano Dayana Alejandra'),
+        'angie': ('1001753481', 'Angie Niyered Agudelo'),
+        'yennifer': ('1007283803', 'Muneton Ochoa Yennifer Andrea'),
+        'karina': ('1041410064', 'Munera Monsalve Lisveth Karina'),
+        'edith': ('43692133', 'Garcia Palencia Edith Florinda'),
+    }
+    mapeo = {normalizar(k): v for k, v in mapeo.items()}
+    cambios = 0
+    for emp in Empleado.query.all():
+        clave = normalizar(emp.nombre)
+        if clave in mapeo:
+            ced, nom = mapeo[clave]
+            if emp.cedula_real != ced or emp.nombre_real != nom:
+                emp.cedula_real = ced
+                emp.nombre_real = nom
+                cambios += 1
+    if cambios:
+        db.session.commit()
+        print(f'Cedulas reales actualizadas: {cambios} empleados')
 
 
 def main():
@@ -173,6 +259,9 @@ def main():
         db.session.commit()
 
         print('Seed completado.')
+
+        # Asignar cedulas/ nombres reales desde la plantilla (idempotente)
+        _cargar_cedulas_reales()
 
 
 if __name__ == '__main__':

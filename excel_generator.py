@@ -352,38 +352,41 @@ def generar_archivo_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursal_nombre,
                           empleados, registros, novedades, turnos_map):
     """Genera el Excel con el formato de la plantilla BASE LIQUIDACION 2026.
 
-    - `empleados`: empleados del sistema (objetos Empleado del punto de venta).
+    - `empleados`: empleados del sistema del punto de venta (objetos Empleado).
     - `registros`: dict {empleado_id: {dia_int: RegistroHoras}} del mes.
-    Usa la LISTA REAL de empleados (cédula + nombre) de la hoja DATOS de la
-    plantilla como fuente de verdad, vinculando los turnos capturados en el
-    sistema por coincidencia de nombre.
+
+    Usa los EMPLEADOS DEL SISTEMA como base (los que el admin ve y digita).
+    Los empleados que comparten la misma `cedula_real` se agrupan (son la misma
+    persona, ej. un nombre corto y su version completa) y sus turnos se
+    combinan. El nombre y cedula mostrados son los reales de la hoja DATOS
+    cuando estan cargados; si no, los del sistema.
     """
     datos = _cargar_datos()
     matriz = datos['matriz']
     tarifas = datos['tarifas']
     turnos = turnos_map or datos['turnos']
-    empleados_plantilla = datos['empleados_plantilla']
 
-    # Mapa palabra->(empleado_sistema, registros) para vincular por nombre
-    index_sistema = {}
-    for emp in empleados:
-        index_sistema.setdefault(_normalizar(emp.nombre), []).append(
-            (emp.id, registros.get(emp.id, {})))
-
-    # Construir los empleados reales (de hoja DATOS) con sus turnos vinculados
+    # Agrupar empleados del sistema por cedula_real (o por su propio nombre si
+    # no tienen cedula real). Sumar los registros de los que comparten persona.
     reales = []
-    registros_reales = {}
-    for ep in empleados_plantilla:
-        # Buscar el empleado del sistema cuyo nombre coincida
-        encontrado = _buscar_empleado_sistema(ep['nombre'], index_sistema)
-        regs = encontrado if encontrado is not None else {}
-        key = ep['nombre']
-        reales.append({
-            'cedula': ep['cedula'],
-            'nombre': ep['nombre'],
-            'registros': regs,
+    agrupados = {}
+    for emp in empleados:
+        clave = emp.cedula_real or emp.nombre
+        gorup = agrupados.setdefault(clave, {
+            'cedula': emp.cedula_real or emp.cedula,
+            'nombre': emp.nombre_real or emp.nombre,
+            'registros': {},
+            'empleado_id': None,
         })
-        registros_reales[key] = regs
+        # combinar turnos (el que tenga letra gana sobre celdas vacias)
+        for dia, reg in (registros.get(emp.id) or {}).items():
+            if reg is not None and (reg.turno_codigo or reg.turno_codigo == 0):
+                gorup['registros'][dia] = reg
+        if gorup['empleado_id'] is None:
+            gorup['empleado_id'] = emp.id
+
+    reales = list(agrupados.values())
+    registros_reales = {emp['nombre']: emp['registros'] for emp in reales}
 
     administrador = ''
     wb = Workbook()
