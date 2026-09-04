@@ -45,7 +45,11 @@
                 </select>
             </form>
             {% endif %}
+            {% if es_global %}
+            <a href="{{ url_for('panel_global') }}">🏠 Panel Global</a>
+            {% else %}
             <a href="{{ url_for('panel_local', sucursal=sucursal.id) }}">Volver al panel</a>
+            {% endif %}
         </div>
     </div>
     <div class="container">
