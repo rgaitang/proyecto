@@ -27,6 +27,8 @@
 </head>
 <body>
     <div class="login-box">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="SOLOFARMA"
+             style="max-width:180px; display:block; margin:0 auto 15px; border-radius:8px;">
         <h1>Sistema de Horarios</h1>
         <p class="sub">SOLOFARMA - Reporte de turnos y novedades</p>
         {% with messages = get_flashed_messages(with_categories=true) %}

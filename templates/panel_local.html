@@ -44,6 +44,8 @@
 </head>
 <body>
     <div class="topbar">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="SOLOFARMA"
+             style="max-height:40px; border-radius:6px;">
         <h1>Panel Administrador - {{ sucursal.nombre }} {% if es_global %}(Admin Global){% endif %}</h1>
         <a href="{{ url_for('logout') }}">Cerrar sesión</a>
     </div>
