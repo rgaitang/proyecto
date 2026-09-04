@@ -132,7 +132,7 @@
                 {% if reg.empleado_ref.id == emp.id %}{% set _ = emp_days.update({reg.fecha.day: reg}) %}{% endif %}
             {% endfor %}
             <tr>
-                <td class="emp">{{ emp.nombre }}</td>
+                <td class="emp">{{ emp.nombre }}<br><span style="font-weight:400;font-size:10px;color:#666;">{{ emp.cedula_real or emp.cedula }}</span></td>
                 {% for d in dias %}
                 {% set reg = registros.get(d) %}
                 {% if reg and reg.empleado_ref.id == emp.id %}
