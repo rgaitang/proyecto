@@ -48,6 +48,7 @@
         .btn-danger:hover { background: #b0261c !important; }
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden;
                 font-size: 13px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+        .table-wrap { overflow-x: auto; border-radius: 12px; }
         th, td { padding: 9px; border-bottom: 1px solid #eef0f3; text-align: left; }
         th { background: #0b57d0; color: #fff; font-weight: 600; }
         tr:hover td { background: #f8fafd; }
@@ -118,6 +119,61 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-top:0;">Consolidado de novedades - todas las sucursales</h2>
+            <form method="GET" class="rowflex" style="margin-bottom:12px;">
+                <div>
+                    <label>Mes</label>
+                    <select name="informe_mes">
+                        {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if m == informe_mes %}selected{% endif %}>
+                            {{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][m-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Año</label>
+                    <input type="number" name="informe_anio" value="{{ informe_anio }}" style="width:100px;">
+                </div>
+                <button type="submit" class="small" style="background:#1a73e8;color:#fff;cursor:pointer;">Ver consolidado</button>
+            </form>
+            {% if novedades_global %}
+            <p style="color:#555;font-size:13px;margin-bottom:10px;">
+                <b>{{ novedades_global|length }}</b> novedades ingresadas en {{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][informe_mes-1] }} {{ informe_anio }}.
+                {% if sucursales_con_novedad < 6 %}
+                <span style="color:#b06000;">Faltan novedades de {{ 6 - sucursales_con_novedad }} sucursal(es).</span>
+                {% else %}
+                <span style="color:#137333;">Las 6 sucursales ya ingresaron novedades. ✅</span>
+                {% endif %}
+            </p>
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>Fecha</th><th>Quincena</th><th>Sucursal</th><th>Empleado</th>
+                        <th>Tipo</th><th>Código</th><th>Fecha fin</th><th>Reporta</th><th>Descripción</th><th>Estado</th>
+                    </tr>
+                    {% for item in novedades_global %}
+                    <tr>
+                        <td>{{ item.novedad.fecha_inicio }}</td>
+                        <td>{{ 'Q1 (1-15)' if item.novedad.fecha_inicio.day <= 15 else 'Q2 (16-fin)' }}</td>
+                        <td>{{ item.sucursal_nombre }}</td>
+                        <td>{{ item.empleado.nombre }}</td>
+                        <td><span class="tag tag-nov">{{ item.novedad.tipo }}</span></td>
+                        <td>{{ item.novedad.codigo or '-' }}</td>
+                        <td>{{ item.novedad.fecha_fin or '-' }}</td>
+                        <td>{{ item.novedad.reporta or '-' }}</td>
+                        <td>{{ item.novedad.descripcion or '' }}</td>
+                        <td>{{ item.novedad.estado }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% else %}
+            <p style="color:#666;padding:8px 0;">No hay novedades registradas para el periodo elegido.</p>
+            {% endif %}
         </div>
 
         <div class="panel">

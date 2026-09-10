@@ -537,10 +537,26 @@ def panel_global():
     no_leidas = Notificacion.query.filter_by(leida=False).count()
     sucursales_con_novedad = sum(1 for r in resumen if r['novedades'] > 0)
 
+    # Consolidado de novedades de todas las sucursales para el periodo elegido
+    ini = date(informe_anio, informe_mes, 1)
+    fin = date(informe_anio, informe_mes, calendar.monthrange(informe_anio, informe_mes)[1])
+    filas = db.session.query(Novedad, Empleado).join(
+        Empleado, Novedad.empleado_id == Empleado.id
+    ).filter(Novedad.fecha_inicio >= ini, Novedad.fecha_inicio <= fin) \
+        .order_by(Novedad.fecha_inicio, Empleado.sucursal_id).all()
+    sucursal_cache = {}
+    novedades_global = []
+    for n, e in filas:
+        s = sucursal_cache.get(e.sucursal_id) or db.session.get(Sucursal, e.sucursal_id)
+        sucursal_cache[e.sucursal_id] = s
+        novedades_global.append({'novedad': n, 'empleado': e,
+                                 'sucursal_nombre': s.nombre if s else '?'})
+
     return render_template('panel_global.html', resumen=resumen, hoy=hoy,
                            notificaciones=notificaciones, no_leidas=no_leidas,
                            informe_mes=informe_mes, informe_anio=informe_anio,
-                           sucursales_con_novedad=sucursales_con_novedad)
+                           sucursales_con_novedad=sucursales_con_novedad,
+                           novedades_global=novedades_global)
 
 
 @app.route('/admin/empleados')
