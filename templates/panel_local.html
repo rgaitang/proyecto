@@ -81,6 +81,16 @@
           {% endfor %}
         {% endwith %}
 
+        {% if admin_bloqueado %}
+        <div style="padding:14px 18px;border-radius:8px;background:#fce8e6;color:#c5221f;border:1px solid #f5c6c2;margin-bottom:18px;font-size:14px;font-weight:600;">
+            ⚠️ Tu cuenta está BLOQUEADA por RRHH. No puedes modificar horarios ni novedades.
+            Contáctate con Carolina para que te desbloqueen.
+        </div>
+        <script>
+            document.querySelectorAll('input.turno, .controls button, button').forEach(function (el) { el.disabled = true; });
+        </script>
+        {% endif %}
+
         <details style="background:#fff;padding:12px 15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:15px;">
             <summary style="cursor:pointer;font-weight:600;color:#0b57d0;">Cambiar mi contraseña</summary>
             <form method="POST" action="{{ url_for('cambiar_password') }}" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px;">

@@ -6,9 +6,11 @@ from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    flash, session, jsonify, send_file, abort)
 from werkzeug.utils import secure_filename
+from sqlalchemy import inspect as sa_inspect, text as sa_text
 
-from models import db, Sucursal, Empleado, Usuario, Turno, RegistroHoras, Novedad
-from excel_generator import generar_archivo_siigo
+from models import (db, Sucursal, Empleado, Usuario, Turno, RegistroHoras,
+                    Novedad, Actividad, Notificacion, ExcelGenerado)
+from excel_generator import generar_archivo_siigo, generar_informe_global_siigo
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
@@ -60,6 +62,68 @@ def get_usuario_actual():
     return db.session.get(Usuario, session['user_id'])
 
 
+# ---------------- Utilidades de trazabilidad, notificaciones y bloqueo ----------------
+def quincena_de(fecha):
+    return 1 if fecha.day <= 15 else 2
+
+
+def sucursal_de_usuario(usuario):
+    """Sucursal que administra el usuario (admin_local) o None."""
+    if not usuario:
+        return None
+    emp = usuario.empleado
+    if emp:
+        return emp.sucursal_id
+    return None
+
+
+def admin_local_de_sucursal(sucursal_id):
+    """Devuelve el usuario admin_local de una sucursal (vinculado a un Empleado)."""
+    for e in Empleado.query.filter_by(sucursal_id=sucursal_id).all():
+        if e.usuario and e.usuario.rol == 'admin_local':
+            return e.usuario
+    return None
+
+
+def registrar_actividad(tipo, accion, detalle='', mes=None, anio=None, quincena=None,
+                        empleado_id=None, empleado_nombre=None,
+                        sucursal_id=None, sucursal_nombre=None):
+    """Registra una entrada en la bitácora de trazabilidad."""
+    usuario = get_usuario_actual()
+    if not usuario:
+        return
+    if sucursal_id is None:
+        sucursal_id = sucursal_de_usuario(usuario)
+    if sucursal_nombre is None and sucursal_id:
+        s = db.session.get(Sucursal, sucursal_id)
+        sucursal_nombre = s.nombre if s else ''
+    act = Actividad(fecha=datetime.now(), usuario_id=usuario.id,
+                    usuario_nombre=usuario.username, rol=usuario.rol,
+                    sucursal_id=sucursal_id, sucursal_nombre=sucursal_nombre,
+                    tipo=tipo, accion=accion, detalle=detalle, mes=mes, anio=anio,
+                    quincena=quincena, empleado_id=empleado_id,
+                    empleado_nombre=empleado_nombre)
+    db.session.add(act)
+    db.session.commit()
+
+
+def crear_notificacion(sucursal_id, mensaje, usuario, mes, anio):
+    """Crea un aviso hacia RRHH cuando un admin local ingresa una novedad."""
+    s = db.session.get(Sucursal, sucursal_id) if sucursal_id else None
+    n = Notificacion(creada=datetime.now(), usuario_id=usuario.id,
+                     usuario_nombre=usuario.username,
+                     sucursal_id=sucursal_id,
+                     sucursal_nombre=s.nombre if s else '',
+                     tipo='novedad', mensaje=mensaje, leida=False,
+                     mes=mes, anio=anio)
+    db.session.add(n)
+    db.session.commit()
+
+
+def admin_local_bloqueado(usuario):
+    return bool(usuario and usuario.rol == 'admin_local' and usuario.bloqueado)
+
+
 # ---------------- Utilidades ----------------
 SPANISH_DAYS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO']
 
@@ -94,7 +158,14 @@ def login():
             session['user_id'] = usuario.id
             session['username'] = usuario.username
             session['rol'] = usuario.rol
-            flash('Bienvenido', 'success')
+            usuario.ultimo_login = datetime.now()
+            db.session.commit()
+            registrar_actividad('login', 'login',
+                                detalle=f'{usuario.username} ingresó al sistema')
+            if usuario.bloqueado:
+                flash('Tu cuenta está BLOQUEADA: no puedes modificar horarios ni novedades.', 'warning')
+            else:
+                flash('Bienvenido', 'success')
             if usuario.rol == 'admin_global':
                 return redirect(url_for('panel_global'))
             if usuario.rol == 'admin_local':
@@ -206,10 +277,10 @@ def panel_local():
 
     if usuario.rol == 'admin_local':
         # El admin local solo administra su propia sucursal
-        if not emp_admin or not emp_admin.sucursal_id:
+        sucursal_id = sucursal_de_usuario(usuario)
+        if not sucursal_id:
             flash('Tu sucursal no está configurada', 'danger')
             return redirect(url_for('dashboard'))
-        sucursal_id = emp_admin.sucursal_id
     else:
         # admin global puede elegir sucursal
         sucursal_id = request.args.get('sucursal', type=int)
@@ -242,6 +313,7 @@ def panel_local():
                            registros=registros, turnos=turnos, mes=mes_act, anio=anio_act,
                            quincena=quincena_sel, quincenas=quincenas,
                            sucursal=sucursal, sucursales=sucursales,
+                           admin_bloqueado=admin_local_bloqueado(usuario),
                            es_global=(usuario.rol == 'admin_global'),
                            spanish_days=SPANISH_DAYS)
 
@@ -264,25 +336,43 @@ def admin_editar_turno():
 
     # Control: admin local solo su sucursal
     if usuario.rol == 'admin_local':
-        if target.sucursal_id != emp_admin.sucursal_id:
+        sucursal_admin = sucursal_de_usuario(usuario)
+        if target.sucursal_id != sucursal_admin:
             abort(403)
+        # Control de bloqueo de RRHH
+        if usuario.bloqueado:
+            flash('Estás bloqueado por RRHH. No puedes modificar horarios.', 'danger')
+            return redirect(request.referrer or url_for('panel_local'))
 
     reg = RegistroHoras.query.filter_by(empleado_id=empleado_id, fecha=fecha).first()
+    detalle = (f'{target.nombre} | {fecha.isoformat()}'
+               f' | antes: {reg.turno_codigo if reg else "sin turno"}'
+               f' -> después: {turno if turno else "sin turno"}')
     if turno == '':
         if reg:
             db.session.delete(reg)
             db.session.commit()
-        flash('Turno eliminado', 'success')
+            registrar_actividad('horario', 'eliminar', detalle=detalle,
+                                mes=fecha.month, anio=fecha.year,
+                                quincena=quincena_de(fecha),
+                                empleado_id=target.id, empleado_nombre=target.nombre)
+            flash('Turno eliminado', 'success')
     else:
         if reg:
             reg.turno_codigo = turno
             reg.observacion = observacion
             reg.estado = 'pendiente'
+            accion = 'editar'
         else:
             reg = RegistroHoras(empleado_id=empleado_id, fecha=fecha, turno_codigo=turno,
                                 observacion=observacion, estado='pendiente', creado_por=usuario.id)
             db.session.add(reg)
+            accion = 'crear'
         db.session.commit()
+        registrar_actividad('horario', accion, detalle=detalle,
+                            mes=fecha.month, anio=fecha.year,
+                            quincena=quincena_de(fecha),
+                            empleado_id=target.id, empleado_nombre=target.nombre)
         flash('Turno actualizado', 'success')
     return redirect(request.referrer or url_for('panel_local'))
 
@@ -311,6 +401,10 @@ def nuevas_novedades():
         return redirect(url_for('panel_local' if usuario.rol == 'admin_local' else 'panel_global'))
 
     if request.method == 'POST':
+        if admin_local_bloqueado(usuario):
+            flash('Estás bloqueado por RRHH. No puedes ingresar novedades.', 'danger')
+            return redirect(url_for('nuevas_novedades', sucursal=sucursal_id))
+
         empleado_id = request.form.get('empleado_id', type=int)
         tipo = request.form.get('tipo')
         codigo = request.form.get('codigo', '').strip()
@@ -346,6 +440,22 @@ def nuevas_novedades():
                     estado='pendiente')
         db.session.add(n)
         db.session.commit()
+
+        suc = db.session.get(Sucursal, sucursal_id)
+        registrar_actividad('novedad', 'crear',
+                            detalle=f'{target.nombre} | {tipo} | {f_inicio.isoformat()}'
+                                    f'{" a " + f_fin.isoformat() if f_fin else ""}'
+                                    f' | {descripcion}',
+                            mes=f_inicio.month, anio=f_inicio.year,
+                            quincena=quincena_de(f_inicio),
+                            empleado_id=target.id, empleado_nombre=target.nombre,
+                            sucursal_id=sucursal_id,
+                            sucursal_nombre=suc.nombre if suc else '')
+        if usuario.rol == 'admin_local':
+            crear_notificacion(sucursal_id,
+                               f'El admin {usuario.username} ingresó la novedad "{tipo}" '
+                               f'de {target.nombre} para el {f_inicio.isoformat()}.',
+                               usuario, f_inicio.month, f_inicio.year)
         flash('Novedad registrada', 'success')
         return redirect(url_for('nuevas_novedades', sucursal=sucursal_id))
 
@@ -359,6 +469,7 @@ def nuevas_novedades():
     return render_template('nuevas_novedades.html', sucursal=sucursal, empleados=empleados,
                            novedades=novedades, tipos=TIPOS_NOVEDAD, emp_ids=emp_ids,
                            es_global=(usuario.rol == 'admin_global'),
+                           admin_bloqueado=admin_local_bloqueado(usuario),
                            sucursales=Sucursal.query.order_by(Sucursal.nombre).all(),
                            hoy=date.today())
 
@@ -376,8 +487,17 @@ def eliminar_novedad(novedad_id):
     if usuario.rol == 'admin_local':
         if not emp_admin or not target or target.sucursal_id != emp_admin.sucursal_id:
             abort(403)
+        if usuario.bloqueado:
+            flash('Estás bloqueado por RRHH. No puedes eliminar novedades.', 'danger')
+            return redirect(request.referrer or url_for('panel_local'))
+    detalle = f'{target.nombre if target else n.empleado_id} | {n.tipo} | {n.fecha_inicio}'
     db.session.delete(n)
     db.session.commit()
+    registrar_actividad('novedad', 'eliminar', detalle=detalle,
+                        mes=n.fecha_inicio.month, anio=n.fecha_inicio.year,
+                        quincena=quincena_de(n.fecha_inicio),
+                        empleado_id=n.empleado_id,
+                        empleado_nombre=target.nombre if target else '')
     flash('Novedad eliminada', 'success')
     return redirect(request.referrer or url_for('panel_local'))
 
@@ -389,19 +509,38 @@ def panel_global():
     sucursales = Sucursal.query.order_by(Sucursal.nombre).all()
     hoy = date.today()
 
-    # Resumen por sucursal
+    informe_mes = request.args.get('informe_mes', type=int, default=hoy.month)
+    informe_anio = request.args.get('informe_anio', type=int, default=hoy.year)
+
+    # Resumen por sucursal + estado de bloqueo + novedades del mes
     resumen = []
     for s in sucursales:
         emp_count = Empleado.query.filter_by(sucursal_id=s.id).count()
-        pendientes = 0
         empleados = Empleado.query.filter_by(sucursal_id=s.id).all()
+        pendientes = 0
+        nov_count = 0
         if empleados:
             pendientes = RegistroHoras.query.filter(
                 RegistroHoras.empleado_id.in_([e.id for e in empleados])
-            ).filter(RegistroHoras.fecha >= date(hoy.year, hoy.month, 1)).count()
-        resumen.append({'sucursal': s, 'empleados': emp_count, 'pendientes': pendientes})
+            ).filter(RegistroHoras.fecha >= date(informe_anio, informe_mes, 1)).count()
+            nov_count = Novedad.query.filter(
+                Novedad.empleado_id.in_([e.id for e in empleados]),
+                Novedad.fecha_inicio >= date(informe_anio, informe_mes, 1),
+                Novedad.fecha_inicio <= date(informe_anio, informe_mes, calendar.monthrange(informe_anio, informe_mes)[1])
+            ).count()
+        admin = admin_local_de_sucursal(s.id)
+        resumen.append({'sucursal': s, 'empleados': emp_count, 'pendientes': pendientes,
+                        'novedades': nov_count, 'admin': admin,
+                        'bloqueado': bool(admin and admin.bloqueado)})
 
-    return render_template('panel_global.html', resumen=resumen, hoy=hoy)
+    notificaciones = Notificacion.query.order_by(Notificacion.creada.desc()).limit(40).all()
+    no_leidas = Notificacion.query.filter_by(leida=False).count()
+    sucursales_con_novedad = sum(1 for r in resumen if r['novedades'] > 0)
+
+    return render_template('panel_global.html', resumen=resumen, hoy=hoy,
+                           notificaciones=notificaciones, no_leidas=no_leidas,
+                           informe_mes=informe_mes, informe_anio=informe_anio,
+                           sucursales_con_novedad=sucursales_con_novedad)
 
 
 @app.route('/admin/empleados')
@@ -669,9 +808,9 @@ def generar_excel():
         return redirect(request.referrer or url_for('panel_global'))
 
     if usuario.rol == 'admin_local':
-        if not emp_admin or not emp_admin.sucursal_id:
+        sucursal_id = sucursal_de_usuario(usuario)
+        if not sucursal_id:
             abort(403)
-        sucursal_id = emp_admin.sucursal_id
     else:
         sucursal_id = request.form.get('sucursal_id', type=int)
         if not sucursal_id:
@@ -704,11 +843,197 @@ def generar_excel():
     archivo = generar_archivo_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursal.nombre,
                                     empleados, registros, novedades, turnos_map)
 
+    # Histórico + trazabilidad
+    db.session.add(ExcelGenerado(fecha=datetime.now(), usuario_id=usuario.id,
+                                 usuario_nombre=usuario.username,
+                                 sucursal_id=sucursal.id, sucursal_nombre=sucursal.nombre,
+                                 nombre_mes=nombre_mes, mes=mes, anio=anio,
+                                 nombre_archivo=os.path.basename(archivo), es_global=False))
+    db.session.commit()
+    registrar_actividad('excel', 'generar',
+                        detalle=f'Excel SIIGO de {sucursal.nombre} - {nombre_mes} {anio}',
+                        mes=mes, anio=anio,
+                        sucursal_id=sucursal.id, sucursal_nombre=sucursal.nombre)
+
     flash('Archivo Excel generado', 'success')
     return send_file(archivo, as_attachment=True)
 
 
-# ---------------- Carga inicial (script) ----------------
+# ---------------- Informe global de novedades ----------------
+@app.route('/generar_excel_global', methods=['POST'])
+@rol_required('admin_global')
+def generar_excel_global():
+    mes = request.form.get('mes', type=int)
+    anio = request.form.get('anio', type=int)
+    if not mes or not anio:
+        flash('Mes y año obligatorios', 'danger')
+        return redirect(url_for('panel_global'))
+
+    nombre_mes = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO',
+                  'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'][mes - 1]
+
+    # Verificar que todas las sucursales ya ingresaron novedades
+    faltantes = []
+    sucursales_data = []
+    for s in Sucursal.query.order_by(Sucursal.nombre).all():
+        empleados = Empleado.query.filter_by(sucursal_id=s.id).all()
+        novedades = []
+        if empleados:
+            novedades = Novedad.query.filter(
+                Novedad.empleado_id.in_([e.id for e in empleados]),
+                Novedad.fecha_inicio >= date(anio, mes, 1),
+                Novedad.fecha_inicio <= date(anio, mes, calendar.monthrange(anio, mes)[1])
+            ).all()
+        if not novedades:
+            faltantes.append(s.nombre)
+        sucursales_data.append({'sucursal': s, 'empleados': empleados, 'novedades': novedades})
+
+    if faltantes:
+        flash(f'Faltan novedades de: {", ".join(faltantes)}. El informe global no puede generarse aún.', 'danger')
+        return redirect(url_for('panel_global'))
+
+    archivo = generar_informe_global_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursales_data)
+
+    usuario = get_usuario_actual()
+    db.session.add(ExcelGenerado(fecha=datetime.now(), usuario_id=usuario.id,
+                                 usuario_nombre=usuario.username,
+                                 sucursal_id=None, sucursal_nombre='TODAS LAS SUCURSALES',
+                                 nombre_mes=nombre_mes, mes=mes, anio=anio,
+                                 nombre_archivo=os.path.basename(archivo), es_global=True))
+    db.session.commit()
+    registrar_actividad('excel', 'generar',
+                        detalle=f'INFORME GLOBAL de novedades - {nombre_mes} {anio}',
+                        mes=mes, anio=anio,
+                        sucursal_nombre='TODAS LAS SUCURSALES')
+
+    flash('Informe global de novedades generado', 'success')
+    return send_file(archivo, as_attachment=True)
+
+
+# ---------------- Notificaciones y bloqueo de admin local ----------------
+@app.route('/notificacion/leer/<int:nid>', methods=['POST'])
+@rol_required('admin_global')
+def notificacion_leer(nid):
+    n = db.session.get(Notificacion, nid)
+    if n:
+        n.leida = True
+        db.session.commit()
+    return redirect(url_for('panel_global'))
+
+
+@app.route('/notificaciones/leer_todas', methods=['POST'])
+@rol_required('admin_global')
+def notificaciones_leer_todas():
+    for n in Notificacion.query.filter_by(leida=False).all():
+        n.leida = True
+    db.session.commit()
+    flash('Notificaciones marcadas como leídas', 'info')
+    return redirect(url_for('panel_global'))
+
+
+@app.route('/admin/bloquear_sucursal/<int:sucursal_id>', methods=['POST'])
+@rol_required('admin_global')
+def bloquear_sucursal(sucursal_id):
+    admin = admin_local_de_sucursal(sucursal_id)
+    if not admin:
+        flash('No hay admin local configurado para esta sucursal', 'warning')
+        return redirect(url_for('panel_global'))
+    admin.bloqueado = True
+    admin.motivo_bloqueo = request.form.get('motivo', '')
+    db.session.commit()
+    s = db.session.get(Sucursal, sucursal_id)
+    registrar_actividad('bloqueo', 'bloquear',
+                        detalle=f'Bloqueado el admin {admin.username} '
+                                f'({request.form.get("motivo", "") or "sin motivo"})',
+                        sucursal_id=sucursal_id,
+                        sucursal_nombre=s.nombre if s else '')
+    flash(f'Admin {admin.username} bloqueado', 'success')
+    return redirect(url_for('panel_global'))
+
+
+@app.route('/admin/desbloquear_sucursal/<int:sucursal_id>', methods=['POST'])
+@rol_required('admin_global')
+def desbloquear_sucursal(sucursal_id):
+    admin = admin_local_de_sucursal(sucursal_id)
+    if not admin:
+        flash('No hay admin local configurado para esta sucursal', 'warning')
+        return redirect(url_for('panel_global'))
+    admin.bloqueado = False
+    admin.motivo_bloqueo = ''
+    db.session.commit()
+    s = db.session.get(Sucursal, sucursal_id)
+    registrar_actividad('bloqueo', 'desbloquear',
+                        detalle=f'Desbloqueado el admin {admin.username}',
+                        sucursal_id=sucursal_id,
+                        sucursal_nombre=s.nombre if s else '')
+    flash(f'Admin {admin.username} desbloqueado', 'success')
+    return redirect(url_for('panel_global'))
+
+
+# ---------------- Trazabilidad e histórico de Excel ----------------
+@app.route('/trazabilidad')
+@rol_required('admin_global')
+def trazabilidad():
+    f_sucursal = request.args.get('sucursal', type=int)
+    f_tipo = request.args.get('tipo', type=str)
+    f_mes = request.args.get('mes', type=int)
+    f_anio = request.args.get('anio', type=int)
+
+    q = Actividad.query
+    if f_sucursal:
+        q = q.filter_by(sucursal_id=f_sucursal)
+    if f_tipo:
+        q = q.filter_by(tipo=f_tipo)
+    if f_mes:
+        q = q.filter_by(mes=f_mes)
+    if f_anio:
+        q = q.filter_by(anio=f_anio)
+    actividades = q.order_by(Actividad.fecha.desc()).limit(800).all()
+
+    sucursales = Sucursal.query.order_by(Sucursal.nombre).all()
+    return render_template('trazabilidad.html', actividades=actividades,
+                           sucursales=sucursales, f_sucursal=f_sucursal,
+                           f_tipo=f_tipo, f_mes=f_mes, f_anio=f_anio)
+
+
+@app.route('/historico_excel')
+@rol_required('admin_global')
+def historico_excel():
+    logs = ExcelGenerado.query.order_by(ExcelGenerado.fecha.desc()).all()
+    return render_template('historico_excel.html', logs=logs)
+
+
+@app.route('/descargar_excel/<int:log_id>')
+@rol_required('admin_global')
+def descargar_excel(log_id):
+    log = db.session.get(ExcelGenerado, log_id)
+    if not log:
+        abort(404)
+    ruta = os.path.join(OUTPUT_DIR, log.nombre_archivo)
+    if not os.path.exists(ruta):
+        flash('El archivo ya no existe en el servidor', 'danger')
+        return redirect(url_for('historico_excel'))
+    return send_file(ruta, as_attachment=True)
+
+
+# ---------------- Migración (SQLite y Postgres) ----------------
+def migrar_bd():
+    """Añade columnas nuevas a tablas existentes según la BD usada."""
+    insp = sa_inspect(db.engine)
+    if 'usuario' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('usuario')}
+        with db.engine.begin() as conn:
+            if 'bloqueado' not in cols:
+                t = 'BOOLEAN DEFAULT FALSE' if db.engine.dialect.name == 'postgresql' else 'BOOLEAN DEFAULT 0'
+                conn.execute(sa_text(f'ALTER TABLE usuario ADD COLUMN bloqueado {t}'))
+            if 'motivo_bloqueo' not in cols:
+                t = 'VARCHAR(200)' if db.engine.dialect.name == 'postgresql' else 'VARCHAR(200)'
+                conn.execute(sa_text(f'ALTER TABLE usuario ADD COLUMN motivo_bloqueo {t}'))
+            if 'ultimo_login' not in cols:
+                t = 'TIMESTAMP' if db.engine.dialect.name == 'postgresql' else 'DATETIME'
+                conn.execute(sa_text(f'ALTER TABLE usuario ADD COLUMN ultimo_login {t}'))
+
+
 def init_db():
     db.create_all()
     if Sucursal.query.count() == 0:
@@ -720,10 +1045,12 @@ def init_db():
 
 
 # ---------------- Inicializacion al arrancar (para gunicorn app:app) ----------------
-# Crea las tablas y llena datos base (sucursales, turnos, admin, empleados) si la
+# Migra, crea las tablas y llena datos base (sucursales, turnos, admin, empleados) si la
 # base esta vacia. Esto garantiza el funcionamiento aunque Render use 'gunicorn app:app'
 # en lugar del start.sh. Es idempotente: solo actua cuando la BD esta vacia.
 with app.app_context():
+    migrar_bd()
+    db.create_all()
     from seed import main as seed_main
     seed_main()
 

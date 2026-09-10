@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trazabilidad - RRHH</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; padding: 24px; color: #1f2937; }
+        .topbar { background: linear-gradient(135deg, #0b57d0, #1a73e8); color: #fff; padding: 16px 26px;
+                  border-radius: 14px; display: flex; justify-content: space-between; align-items: center;
+                  margin-bottom: 20px; box-shadow: 0 6px 20px rgba(11,87,208,0.25); }
+        .topbar h1 { font-size: 19px; font-weight: 600; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.18);
+                    padding: 8px 16px; border-radius: 8px; font-size: 14px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        .filtros { background: #fff; padding: 14px 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+                   display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+        .filtros label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+        select, input { padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
+        .btn { background: #1a73e8; color: #fff; border: none; padding: 9px 16px; border-radius: 8px;
+               cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden;
+                font-size: 12.5px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+        th, td { padding: 8px; border-bottom: 1px solid #eef0f3; text-align: left; }
+        th { background: #0b57d0; color: #fff; font-weight: 600; }
+        tr:hover td { background: #f8fafd; }
+        .tag { padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .t-login { background: #e6f4ea; color: #137333; }
+        .t-horario { background: #e8f0fe; color: #0b57d0; }
+        .t-novedad { background: #fef7e0; color: #b06000; }
+        .t-excel { background: #f3e8fd; color: #6f42c1; }
+        .t-bloqueo { background: #fce8e6; color: #c5221f; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Trazabilidad de cambios</h1>
+        <div>
+            <a href="{{ url_for('panel_global') }}">🏠 Panel Global</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="GET" class="filtros">
+            <div>
+                <label>Sucursal</label>
+                <select name="sucursal">
+                    <option value="">Todas</option>
+                    {% for s in sucursales %}
+                    <option value="{{ s.id }}" {% if f_sucursal == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Tipo</label>
+                <select name="tipo">
+                    <option value="">Todos</option>
+                    {% for t in ['login', 'horario', 'novedad', 'excel', 'bloqueo'] %}
+                    <option value="{{ t }}" {% if f_tipo == t %}selected{% endif %}>{{ t|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Mes</label>
+                <select name="mes">
+                    <option value="">Todos</option>
+                    {% for m in range(1,13) %}
+                    <option value="{{ m }}" {% if f_mes == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Año</label>
+                <input type="number" name="anio" value="{{ f_anio or '' }}" style="width:90px;">
+            </div>
+            <button type="submit" class="btn">Filtrar</button>
+            <a class="btn" href="{{ url_for('trazabilidad') }}" style="background:#5f6368;">Limpiar</a>
+        </form>
+
+        {% if actividades %}
+        <table>
+            <tr><th>Fecha y hora</th><th>Usuario</th><th>Rol</th><th>Sucursal</th><th>Tipo</th><th>Acción</th><th>Detalle</th></tr>
+            {% for a in actividades %}
+            <tr>
+                <td>{{ a.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td>{{ a.usuario_nombre }} (#{{ a.usuario_id }})</td>
+                <td>{{ a.rol }}</td>
+                <td>{{ a.sucursal_nombre or '-' }}</td>
+                <td><span class="tag t-{{ a.tipo }}">{{ a.tipo }}</span></td>
+                <td>{{ a.accion }}</td>
+                <td>
+                    {{ a.detalle }}
+                    {% if a.empleado_nombre %}<br><small>Empleado: {{ a.empleado_nombre }}</small>{% endif %}
+                    {% if a.mes %}<br><small>Periodo: {{ a.anio }}/{{ a.mes }}{% if a.quincena %} · Q{{ a.quincena }}{% endif %}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p style="color:#888;font-size:12px;margin-top:10px;">Mostrando hasta {{ actividades|length }} registros (más recientes primero).</p>
+        {% else %}
+        <p style="color:#666;padding:20px 0;">No hay actividades para los filtros seleccionados.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

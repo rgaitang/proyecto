@@ -331,3 +331,84 @@ def generar_archivo_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursal_nombre,
     ruta = os.path.join(OUTPUT_DIR, nombre_archivo)
     wb.save(ruta)
     return ruta
+
+
+# ------------------ Informe global de novedades ------------------
+_CABECERA = Font(bold=True, size=10)
+
+
+def _estilo_global(ws, fila, ncols):
+    thin = Side(style='thin', color='999999')
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    for r in range(fila - 1, fila + 1):
+        for c in range(1, ncols + 1):
+            cell = ws.cell(row=r, column=c)
+            cell.border = border
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+        if r == fila - 1:
+            ws.cell(row=r, column=1).font = _CABECERA
+
+
+def _hoja_novedades_sucursal(wb, nombre_mes, sucursal_nombre, empleados, novedades):
+    """Hoja de novedades de una sucursal al estilo plantilla."""
+    ws = wb.create_sheet(f'NOVIDADES {sucursal_nombre}'[:31])
+    ws.cell(row=1, column=1, value=f'NOVEDADES DE {sucursal_nombre.upper()} - {nombre_mes}')
+    headers = ['CEDULA', 'NOMBRE', 'FECHA INICIO', 'FECHA FIN', 'TIPO', 'CODIGO', 'REPORTA', 'DESCRIPCION']
+    for i, h in enumerate(headers):
+        ws.cell(row=2, column=1 + i, value=h)
+    _estilo_global(ws, 3, len(headers))
+
+    fila = 3
+    emp_map = {e.id: e for e in empleados}
+    for n in novedades:
+        emp = emp_map.get(n.empleado_id)
+        ws.cell(row=fila, column=1, value=emp.cedula if emp else '')
+        ws.cell(row=fila, column=2, value=emp.nombre if emp else '')
+        ws.cell(row=fila, column=3, value=n.fecha_inicio)
+        ws.cell(row=fila, column=4, value=n.fecha_fin or '')
+        ws.cell(row=fila, column=5, value=n.tipo)
+        ws.cell(row=fila, column=6, value=n.codigo or '')
+        ws.cell(row=fila, column=7, value=n.reporta or '')
+        ws.cell(row=fila, column=8, value=n.descripcion or '')
+        fila += 1
+
+    for i in range(1, len(headers) + 1):
+        ws.column_dimensions[get_column_letter(i)].width = 18
+    ws.column_dimensions['B'].width = 30
+    ws.freeze_panes = 'A3'
+    return ws
+
+
+def _hoja_resumen_global(wb, nombre_mes, anio, sucursales_data):
+    """Hoja resumen: una fila por sucursal con total de novedades."""
+    ws = wb.create_sheet('RESUMEN')
+    ws.cell(row=1, column=1, value=f'INFORME GLOBAL DE NOVEDADES {nombre_mes} {anio}')
+    headers = ['SUCURSAL', 'NOVEDADES', 'EMPLEADOS']
+    for i, h in enumerate(headers):
+        ws.cell(row=3, column=1 + i, value=h)
+    _estilo_global(ws, 4, len(headers))
+    fila = 4
+    for item in sucursales_data:
+        ws.cell(row=fila, column=1, value=item['sucursal'].nombre)
+        ws.cell(row=fila, column=2, value=len(item['novedades']))
+        ws.cell(row=fila, column=3, value=len(item['empleados']))
+        fila += 1
+    ws.column_dimensions['A'].width = 24
+    return ws
+
+
+def generar_informe_global_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursales_data, turnos_map=None):
+    """Genera un Excel consolidado con las novedades de todas las sucursales.
+
+    - sucursales_data: list de dicts {'sucursal', 'empleados', 'novedades'}
+    """
+    wb = Workbook()
+    wb.remove(wb.active)
+    _hoja_resumen_global(wb, nombre_mes, anio, sucursales_data)
+    for item in sucursales_data:
+        _hoja_novedades_sucursal(wb, nombre_mes, item['sucursal'].nombre,
+                                 item['empleados'], item['novedades'])
+    nombre_archivo = f'INFORME_GLOBAL_{nombre_mes}_{anio}.xlsx'
+    ruta = os.path.join(OUTPUT_DIR, nombre_archivo)
+    wb.save(ruta)
+    return ruta

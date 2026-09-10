@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Excel - RRHH</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; padding: 24px; color: #1f2937; }
+        .topbar { background: linear-gradient(135deg, #0b57d0, #1a73e8); color: #fff; padding: 16px 26px;
+                  border-radius: 14px; display: flex; justify-content: space-between; align-items: center;
+                  margin-bottom: 20px; box-shadow: 0 6px 20px rgba(11,87,208,0.25); }
+        .topbar h1 { font-size: 19px; font-weight: 600; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.18);
+                    padding: 8px 16px; border-radius: 8px; font-size: 14px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden;
+                font-size: 13px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+        th, td { padding: 9px; border-bottom: 1px solid #eef0f3; text-align: left; }
+        th { background: #0b57d0; color: #fff; font-weight: 600; }
+        tr:hover td { background: #f8fafd; }
+        .tag { padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .t-global { background: #f3e8fd; color: #6f42c1; }
+        .t-suc { background: #e8f0fe; color: #0b57d0; }
+        .btn { background: #137333; color: #fff; border: none; padding: 7px 14px; border-radius: 6px;
+               cursor: pointer; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Histórico de archivos Excel generados</h1>
+        <div>
+            <a href="{{ url_for('panel_global') }}">🏠 Panel Global</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        {% if logs %}
+        <table>
+            <tr><th>Fecha</th><th>Usuario</th><th>Sucursal</th><th>Periodo</th><th>Archivo</th><th>Tipo</th><th></th></tr>
+            {% for l in logs %}
+            <tr>
+                <td>{{ l.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ l.usuario_nombre }}</td>
+                <td>{{ l.sucursal_nombre }}</td>
+                <td>{{ l.nombre_mes }} {{ l.anio }}</td>
+                <td>{{ l.nombre_archivo }}</td>
+                <td><span class="tag {{ 't-global' if l.es_global else 't-suc' }}">{{ 'GLOBAL' if l.es_global else 'SIIGO' }}</span></td>
+                <td><a class="btn" href="{{ url_for('descargar_excel', log_id=l.id) }}">Descargar</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p style="color:#666;padding:20px 0;">Aún no se ha generado ningún Excel.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
