@@ -8,6 +8,8 @@ Antes: un archivo Excel en Google Drive donde cualquier empleado con acceso pod�
 
 Ahora: cada empleado solo ve y edita **sus propios turnos**. Los administradores locales aprueban por sucursal y la coordinadora de RRHH genera el Excel final.
 
+>> Base de datos: PostgreSQL (Neon) vía `DATABASE_URL`. Si la variable no existe, cae a SQLite local (solo desarrollo).
+
 > **Persistencia:** el seed solo se ejecuta la **primera vez** que la base está vacía.
 > Después, la tabla `empleados` (y todo lo que Carolina edite en la app) es la
 > **única fuente de verdad**: los cambios se guardan en la base y NO se
