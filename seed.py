@@ -444,6 +444,13 @@ def main():
         # ---- Migracion ligera de esquema (idempotente) ----
         _migrar_esquema()
 
+        # Detecta la PRIMERA carga (BD vacia). Solo entonces se siembra la lista
+        # inicial de empleados desde los JSON/plantilla. A partir de ese momento
+        # la tabla 'empleados' es la fuente de verdad que Carolina edita desde la
+        # aplicacion y el seed NUNCA vuelve a tocarla (nombres, cargos, cedulas,
+        # sucursales) ni a borrar empleados creados/editados por ella.
+        primera_carga = Empleado.query.count() == 0
+
         # Sucursales: crear las faltantes y renombrar las existentes en orden (1 a 6)
         if Sucursal.query.count() == 0:
             for nombre in NOMBRES_SUCURSALES:
@@ -511,23 +518,30 @@ def main():
 
         print('Seed completado.')
 
-        # Asignar cedulas/ nombres reales desde la plantilla (idempotente)
-        _cargar_cedulas_reales()
+        # SOLO en la primera carga se normaliza la lista de empleados contra la
+        # nómina real. En arranques posteriores NO se ejecuta nada de esto, para
+        # que los cambios de Carolina en la app (cargo, sucursal, nuevos
+        # empleados, etc.) se conserven tal como quedaron en la BD.
+        if primera_carga:
+            # Asignar cedulas/ nombres reales desde la plantilla (idempotente)
+            _cargar_cedulas_reales()
 
-        # Limpiar empleados duplicados/nombres cortos sin cedula real (idempotente)
-        _limpiar_empleados_duplicados()
+            # Limpiar empleados duplicados/nombres cortos sin cedula real
+            _limpiar_empleados_duplicados()
 
-        # Corregir vinculaciones: carolina -> Ana Carolina Sepulveda, admin1 -> regente
-        _vincular_carolina_y_regente()
+            # Vincular: carolina -> Ana Carolina Sepulveda, admin1 -> regente
+            _vincular_carolina_y_regente()
 
-        # Subir la nómina real desde data/nomina.json
-        _cargar_empleados_nomina()
+            # Subir la nómina real desde data/nomina.json
+            _cargar_empleados_nomina()
 
-        # Fusionar duplicados de la misma persona (nombres cortos del seed antiguo)
-        _fusionar_duplicados_nomina()
+            # Fusionar duplicados de la misma persona
+            _fusionar_duplicados_nomina()
 
-        # Dejar SOLO los empleados de la nómina (elimina los que vienen de la plantilla)
-        _depurar_solo_nomina()
+            # Dejar SOLO los empleados de la nómina
+            _depurar_solo_nomina()
+            print('Seed: primera carga completada. A partir de ahora la BD es la ' +
+                  'única fuente: el seed ya no modifica empleados en cada arranque.')
 
 
 if __name__ == '__main__':
