@@ -363,55 +363,74 @@ def _fusionar_duplicados_nomina():
         print(f'Nomina: {fusionados} duplicados fusionados')
 
 
+def _depurar_solo_nomina():
+    """Deja únicamente los empleados de la nómina real (data/nomina.json).
+    Elimina cualquier otro empleado (datos semilla/plantilla) junto con sus
+    registros y novedades. NUNCA elimina usuarios de login: si se elimina el
+    empleado vinculado a un admin, el usuario se conserva para reasignarlo.
+    Idempotente."""
+    from models import Novedad, RegistroHoras
+    nomina = cargar_nomina()
+    if not nomina:
+        return
+    mantenidos = set()
+    for row in nomina:
+        ced = str(row.get('cedula', '')).strip()
+        if ced:
+            mantenidos.add(ced)
+
+    eliminados = []
+    for emp in Empleado.query.all():
+        if (emp.cedula_real or emp.cedula) in mantenidos:
+            continue
+        Novedad.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+        RegistroHoras.query.filter_by(empleado_id=emp.id).delete(synchronize_session=False)
+        db.session.delete(emp)
+        eliminados.append(emp.nombre)
+
+    if eliminados:
+        db.session.commit()
+        print(f'Nomina: {len(eliminados)} empleados fuera de la nómina eliminados: ' +
+              ', '.join(eliminados))
+    else:
+        print('Nomina: no hay empleados fuera de la nómina que eliminar')
+
+
 def _vincular_carolina_y_regente():
-    """Corrige las vinculaciones de login:
-    - carolina (admin_global) queda vinculada al empleado 'Ana Carolina Sepulveda'.
-    - admin1 (admin_local de NIQUIA) queda vinculado al regente 'Jose De Jesus Orrego'.
-    Idempotente: si ya están correctas, no hace cambios."""
+    """Vinculaciones SOLO iniciales y no destructivas:
+    - carolina (admin_global) -> 'Sepulveda Vides Ana Carolina' si está libre.
+    - admin1 (admin_local NIQUIA) -> regente 'Orrego Franco Jose De Jesus'.
+    NUNCA sobrescribe asignaciones existentes: si el usuario ya tiene empleado
+    vinculado o el empleado ya está ocupado, no toca nada (el admin global
+    reasigna manualmente al admin de cada sucursal)."""
     cambios = []
 
     carolina = Usuario.query.filter_by(username='carolina').first()
     admin1 = Usuario.query.filter_by(username='admin1').first()
 
-    # --- carolina -> 'Ana Carolina Sepulveda' / 'Sepulveda Vides Ana Carolina' ---
     if carolina:
-        ana = (Empleado.query.filter_by(nombre='Ana Carolina Sepulveda').first()
-               or Empleado.query.filter_by(nombre_real='Sepulveda Vides Ana Carolina').first())
-        if ana and ana.user_id != carolina.id:
-            # quitar a 'Ana Carolina Sepulveda' de cualquier otro usuario de login
+        ana = (Empleado.query.filter_by(nombre='Sepulveda Vides Ana Carolina').first()
+               or Empleado.query.filter_by(nombre='Ana Carolina Sepulveda').first())
+        if ana:
             if ana.user_id and ana.user_id != carolina.id:
                 otro = db.session.get(Usuario, ana.user_id)
-                if otro:
-                    cambios.append(f"'Ana Carolina Sepulveda' desvinculada de {otro.username}")
+                ana.user_id = None
+                cambios.append(f"'Sepulveda Vides Ana Carolina' desvinculada de "
+                               f"{otro.username if otro else ana.user_id}")
+        if carolina.empleado is None and ana and ana.user_id is None:
             ana.user_id = carolina.id
-            cambios.append("'carolina' vinculada a 'Ana Carolina Sepulveda'")
-        # si carolina tenia otro empleado vinculado, dejarlo
-        carolina_emp = Empleado.query.filter_by(user_id=carolina.id).all()
-        for emp in carolina_emp:
-            if emp.id != (ana.id if ana else -1):
-                emp.user_id = None
+            cambios.append("'carolina' vinculada a 'Sepulveda Vides Ana Carolina'")
 
-    # --- admin1 -> regente 'Jose De Jesus Orrego' / 'Orrego Franco Jose De Jesus' ---
-    if admin1:
-        regente = (Empleado.query.filter_by(nombre='Jose De Jesus Orrego').first()
-                   or Empleado.query.filter_by(nombre_real='Orrego Franco Jose De Jesus').first())
-        if regente:
-            if regente.user_id != admin1.id:
-                if regente.user_id:
-                    otro = db.session.get(Usuario, regente.user_id)
-                    if otro:
-                        cambios.append(f"'Jose De Jesus Orrego' desvinculado de {otro.username}")
-                # asegurar que admin1 no quede vinculado a otro empleado
-                for emp in Empleado.query.filter_by(user_id=admin1.id).all():
-                    if emp.id != regente.id:
-                        emp.user_id = None
-                        cambios.append(f"admin1 desvinculado de '{emp.nombre}'")
-                regente.user_id = admin1.id
-                cambios.append("admin1 vinculado al regente 'Jose De Jesus Orrego'")
+    if admin1 and admin1.empleado is None:
+        regente = (Empleado.query.filter_by(nombre='Orrego Franco Jose De Jesus').first()
+                   or Empleado.query.filter_by(nombre='Jose De Jesus Orrego').first())
+        if regente and regente.user_id is None:
+            regente.user_id = admin1.id
+            cambios.append("admin1 vinculado al regente 'Orrego Franco Jose De Jesus'")
 
     if cambios:
         db.session.commit()
-        print('Vinculaciones corregidas:')
+        print('Vinculaciones iniciales:')
         for c in cambios:
             print('  -', c)
     else:
@@ -506,6 +525,9 @@ def main():
 
         # Fusionar duplicados de la misma persona (nombres cortos del seed antiguo)
         _fusionar_duplicados_nomina()
+
+        # Dejar SOLO los empleados de la nómina (elimina los que vienen de la plantilla)
+        _depurar_solo_nomina()
 
 
 if __name__ == '__main__':
