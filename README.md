@@ -44,6 +44,11 @@ python run.py
 # Abre http://127.0.0.1:5000
 ```
 
+## Producción (Render)
+
+- **URL web:** https://proyecto-4jvd.onrender.com/login
+- Despliegue automático desde `main` en https://github.com/rgaitang/proyecto
+
 ## Usuario inicial
 
 - **Usuario:** `carolina`
