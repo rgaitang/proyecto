@@ -17,6 +17,7 @@ import calendar
 import json
 import os
 import re
+import unicodedata
 from datetime import date, datetime
 
 from openpyxl import Workbook
@@ -37,6 +38,19 @@ CONCEPTOS = [
 ]
 
 _ARCHIVO_DATOS = os.path.join(_AQUI, 'datos_plantilla.json')
+
+
+def _normalizar_cargo(cargo):
+    """Normaliza un cargo para comparar sin importar mayúsculas/acentos."""
+    if not cargo:
+        return ''
+    s = ' '.join(str(cargo).lower().split())
+    return ''.join(c for c in unicodedata.normalize('NFKD', s)
+                   if not unicodedata.combining(c))
+
+
+# Cargos que generan recargos y salen en el horario, en orden de aparición.
+CARGOS_HORARIO = ['vendedor', 'administrador', 'mensajero']
 
 
 def _cargar_datos():
@@ -304,9 +318,12 @@ def generar_archivo_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursal_nombre,
         gorup = agrupados.setdefault(clave, {
             'cedula': emp.cedula_real or emp.cedula,
             'nombre': emp.nombre_real or emp.nombre,
+            'cargo': '',
             'registros': {},
             'empleado_id': None,
         })
+        if not gorup['cargo']:
+            gorup['cargo'] = emp.cargo or ''
         # combinar turnos (el que tenga letra gana sobre celdas vacias)
         for dia, reg in (registros.get(emp.id) or {}).items():
             if reg is not None and (reg.turno_codigo or reg.turno_codigo == 0):
@@ -315,6 +332,20 @@ def generar_archivo_siigo(OUTPUT_DIR, nombre_mes, anio, mes, sucursal_nombre,
             gorup['empleado_id'] = emp.id
 
     reales = list(agrupados.values())
+
+    def _clave_orden(g):
+        cargo = _normalizar_cargo(g.get('cargo'))
+        try:
+            idx = CARGOS_HORARIO.index(cargo)
+        except ValueError:
+            idx = len(CARGOS_HORARIO)
+        return (idx, _normalizar_cargo(g.get('nombre')))
+
+    # Solo los cargos que generan recargos, agrupados por cargo (Vendedor,
+    # ADMINISTRADOR, Mensajero). Los Asistente Administrativa NO salen.
+    reales = [g for g in reales
+              if _normalizar_cargo(g.get('cargo')) in CARGOS_HORARIO]
+    reales.sort(key=_clave_orden)
     registros_reales = {emp['nombre']: emp['registros'] for emp in reales}
 
     administrador = ''
