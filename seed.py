@@ -82,6 +82,24 @@ def cargar_empleados_json():
     return []
 
 
+def cargar_nomina():
+    """Carga la nómina real (data/nomina.json): lista de dicts cedula/nombre/cargo.
+    Generado a partir de Trabajadores.xls. Lista vacia si el archivo no existe."""
+    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'nomina.json')
+    if os.path.exists(ruta):
+        with open(ruta, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
+
+
+def _normalizar_tokens(s):
+    """Conjunto de palabras de un nombre normalizado (sin acentos, minusculas)."""
+    import unicodedata
+    s = unicodedata.normalize('NFD', s.lower())
+    s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+    return set(p for p in s.replace('ñ', 'n').split() if p)
+
+
 def _migrar_esquema():
     """Agrega columnas faltantes a tablas existentes (compatible SQLite y PostgreSQL)."""
     from sqlalchemy import inspect, text
@@ -249,6 +267,102 @@ def _limpiar_empleados_duplicados():
           ', '.join(e.nombre for e in candidatos))
 
 
+def _cargar_empleados_nomina():
+    """Sube los empleados de la nómina real (data/nomina.json) a la BD.
+    - Crea los empleados que no existen (sin crear usuarios de login).
+    - Actualiza nombre/cédula/cargo de los existentes, detectándolos por
+      cédula real o por coincidencia de nombre (tokens).
+    - NO toca user_id: Carolina y los regentes conservan su vinculación.
+    - NO asigna sucursal: queda a cargo del admin global desde la aplicación.
+    Idempotente: se puede ejecutar en cada arranque sin duplicar."""
+    nomina = cargar_nomina()
+    if not nomina:
+        print('Nomina: no hay data/nomina.json')
+        return
+
+    empleados = Empleado.query.all()
+    creados = []
+    actualizados = []
+
+    for row in nomina:
+        ced = str(row.get('cedula', '')).strip()
+        nombre = str(row.get('nombre', '')).strip()
+        cargo = str(row.get('cargo', '')).strip()
+        if not ced or not nombre:
+            continue
+        toks = _normalizar_tokens(nombre)
+
+        # 1) Match por cédula (real o interna)
+        emp = next((e for e in empleados
+                    if (e.cedula_real or '') == ced or e.cedula == ced), None)
+        # 2) Match por nombre (tokens: el conjunto más corto es subconjunto del otro)
+        if emp is None:
+            for e in empleados:
+                et = _normalizar_tokens(e.nombre or '') or _normalizar_tokens(e.nombre_real or '')
+                if et and toks and (toks <= et or et <= toks):
+                    emp = e
+                    break
+
+        if emp is None:
+            db.session.add(Empleado(cedula=ced, nombre=nombre, cedula_real=ced,
+                                    nombre_real=nombre, cargo=cargo))
+            creados.append(nombre)
+        else:
+            if (emp.cedula_real or '') != ced:
+                emp.cedula_real = ced
+            if emp.cedula != ced:
+                emp.cedula = ced
+            if (emp.nombre_real or '') != nombre:
+                emp.nombre_real = nombre
+            if emp.nombre != nombre:
+                emp.nombre = nombre
+            if not emp.cargo:
+                emp.cargo = cargo
+            actualizados.append(nombre)
+
+    db.session.commit()
+    print(f'Nomina: {len(creados)} empleados creados, {len(actualizados)} actualizados')
+    if creados:
+        print('  Creados: ' + ', '.join(creados[:15]))
+
+
+def _fusionar_duplicados_nomina():
+    """Fusiona registros duplicados de la misma persona (misma cedula_real),
+    conservando el vinculado a un usuario de login y reasignando sus
+    registros de horas/novedades al registro principal. Idempotente."""
+    from models import Novedad, RegistroHoras
+    por_cedula = {}
+    for e in Empleado.query.all():
+        if e.cedula_real:
+            por_cedula.setdefault(e.cedula_real, []).append(e)
+
+    fusionados = 0
+    for ced, lista in por_cedula.items():
+        if len(lista) < 2:
+            continue
+        primario = next((e for e in lista if e.user_id is not None), None)
+        if primario is None:
+            primario = max(lista, key=lambda e: len(e.nombre))
+        for e in lista:
+            if e.id == primario.id or e.user_id is not None:
+                continue
+            # reasignar registros de horas
+            for reg in RegistroHoras.query.filter_by(empleado_id=e.id).all():
+                if RegistroHoras.query.filter_by(empleado_id=primario.id, fecha=reg.fecha).first():
+                    db.session.delete(reg)
+                else:
+                    reg.empleado_id = primario.id
+            # reasignar novedades
+            for n in Novedad.query.filter_by(empleado_id=e.id).all():
+                n.empleado_id = primario.id
+            db.session.delete(e)
+            fusionados += 1
+
+    if fusionados:
+        db.session.commit()
+        print(f'Nomina: {fusionados} duplicados fusionados')
+
+
 def _vincular_carolina_y_regente():
     """Corrige las vinculaciones de login:
     - carolina (admin_global) queda vinculada al empleado 'Ana Carolina Sepulveda'.
@@ -259,9 +373,10 @@ def _vincular_carolina_y_regente():
     carolina = Usuario.query.filter_by(username='carolina').first()
     admin1 = Usuario.query.filter_by(username='admin1').first()
 
-    # --- carolina -> 'Ana Carolina Sepulveda' ---
+    # --- carolina -> 'Ana Carolina Sepulveda' / 'Sepulveda Vides Ana Carolina' ---
     if carolina:
-        ana = Empleado.query.filter_by(nombre='Ana Carolina Sepulveda').first()
+        ana = (Empleado.query.filter_by(nombre='Ana Carolina Sepulveda').first()
+               or Empleado.query.filter_by(nombre_real='Sepulveda Vides Ana Carolina').first())
         if ana and ana.user_id != carolina.id:
             # quitar a 'Ana Carolina Sepulveda' de cualquier otro usuario de login
             if ana.user_id and ana.user_id != carolina.id:
@@ -276,9 +391,10 @@ def _vincular_carolina_y_regente():
             if emp.id != (ana.id if ana else -1):
                 emp.user_id = None
 
-    # --- admin1 -> regente 'Jose De Jesus Orrego' ---
+    # --- admin1 -> regente 'Jose De Jesus Orrego' / 'Orrego Franco Jose De Jesus' ---
     if admin1:
-        regente = Empleado.query.filter_by(nombre='Jose De Jesus Orrego').first()
+        regente = (Empleado.query.filter_by(nombre='Jose De Jesus Orrego').first()
+                   or Empleado.query.filter_by(nombre_real='Orrego Franco Jose De Jesus').first())
         if regente:
             if regente.user_id != admin1.id:
                 if regente.user_id:
@@ -384,6 +500,12 @@ def main():
 
         # Corregir vinculaciones: carolina -> Ana Carolina Sepulveda, admin1 -> regente
         _vincular_carolina_y_regente()
+
+        # Subir la nómina real desde data/nomina.json
+        _cargar_empleados_nomina()
+
+        # Fusionar duplicados de la misma persona (nombres cortos del seed antiguo)
+        _fusionar_duplicados_nomina()
 
 
 if __name__ == '__main__':
