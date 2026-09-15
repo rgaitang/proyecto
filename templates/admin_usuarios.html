@@ -15,6 +15,9 @@
                 box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
         th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
         th { background: #0b57d0; color: #fff; }
+        th a.thlink { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        th a.thlink:hover { text-decoration: underline; }
+        th .arrow { font-weight: bold; }
         .rol { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .rol-admin_global { background: #041e49; color: #fff; }
         .rol-admin_local { background: #1a73e8; color: #fff; }
@@ -34,8 +37,16 @@
     </div>
     <div class="container">
         <a class="btn" href="{{ url_for('crear_usuario') }}">+ Nuevo Usuario</a>
+        {% macro th(col, label) -%}
+        <th>
+            <a class="thlink" href="{{ url_for('admin_usuarios', sort=col, dir='desc' if sort==col and dir=='asc' else 'asc') }}">
+                {{ label }}
+                {%- if sort == col %}<span class="arrow">{{ '▲' if dir == 'asc' else '▼' }}</span>{% endif -%}
+            </a>
+        </th>
+        {%- endmacro %}
         <table>
-            <tr><th>#</th><th>Usuario</th><th>Rol</th><th>Empleado vinculado</th><th>Cédula</th><th>Sucursal</th><th>Acciones</th></tr>
+            <tr><th>#</th>{{ th('usuario', 'Usuario') }}{{ th('rol', 'Rol') }}{{ th('empleado', 'Empleado vinculado') }}{{ th('cedula', 'Cédula') }}{{ th('sucursal', 'Sucursal') }}<th>Acciones</th></tr>
             {% for u in usuarios %}
             <tr>
                 <td>{{ loop.index }}</td>

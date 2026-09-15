@@ -593,8 +593,33 @@ def admin_empleados():
 @app.route('/admin/usuarios')
 @rol_required('admin_global')
 def admin_usuarios():
-    usuarios = Usuario.query.all()
-    return render_template('admin_usuarios.html', usuarios=usuarios)
+    sort = request.args.get('sort', 'usuario')
+    direction = request.args.get('dir', 'asc')
+    SORTABLE = {'usuario', 'rol', 'empleado', 'cedula', 'sucursal'}
+    if sort not in SORTABLE:
+        sort = 'usuario'
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
+
+    q = Usuario.query
+    if sort == 'usuario':
+        col = Usuario.username
+    elif sort == 'rol':
+        col = Usuario.rol
+    elif sort == 'empleado':
+        q = q.outerjoin(Usuario.empleado)
+        col = sa_func.coalesce(Empleado.nombre_real, Empleado.nombre)
+    elif sort == 'cedula':
+        q = q.outerjoin(Usuario.empleado)
+        col = sa_func.coalesce(Empleado.cedula_real, Empleado.cedula)
+    else:  # 'sucursal'
+        q = q.outerjoin(Usuario.empleado).outerjoin(Empleado.sucursal_ref)
+        col = Sucursal.nombre
+
+    col = col.desc() if direction == 'desc' else col.asc()
+    usuarios = q.order_by(col, Usuario.username).all()
+    return render_template('admin_usuarios.html', usuarios=usuarios,
+                           sort=sort, dir=direction)
 
 
 @app.route('/admin/crear_empleado', methods=['GET', 'POST'])
