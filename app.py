@@ -6,7 +6,7 @@ from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    flash, session, jsonify, send_file, abort)
 from werkzeug.utils import secure_filename
-from sqlalchemy import inspect as sa_inspect, text as sa_text
+from sqlalchemy import inspect as sa_inspect, text as sa_text, func as sa_func
 
 from models import (db, Sucursal, Empleado, Usuario, Turno, RegistroHoras,
                     Novedad, Actividad, Notificacion, ExcelGenerado)
@@ -562,8 +562,32 @@ def panel_global():
 @app.route('/admin/empleados')
 @rol_required('admin_global')
 def admin_empleados():
-    empleados = Empleado.query.order_by(Empleado.nombre).all()
-    return render_template('admin_empleados.html', empleados=empleados)
+    sort = request.args.get('sort', 'nombre')
+    direction = request.args.get('dir', 'asc')
+    SORTABLE = {'cedula', 'nombre', 'cargo', 'sucursal', 'usuario'}
+    if sort not in SORTABLE:
+        sort = 'nombre'
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
+
+    q = Empleado.query
+    if sort == 'cedula':
+        col = sa_func.coalesce(Empleado.cedula_real, Empleado.cedula)
+    elif sort == 'nombre':
+        col = sa_func.coalesce(Empleado.nombre_real, Empleado.nombre)
+    elif sort == 'cargo':
+        col = Empleado.cargo
+    elif sort == 'sucursal':
+        q = q.outerjoin(Empleado.sucursal_ref)
+        col = Sucursal.nombre
+    else:  # 'usuario'
+        q = q.outerjoin(Empleado.usuario)
+        col = Usuario.username
+
+    col = col.desc() if direction == 'desc' else col.asc()
+    empleados = q.order_by(col, Empleado.nombre).all()
+    return render_template('admin_empleados.html', empleados=empleados,
+                           sort=sort, dir=direction)
 
 
 @app.route('/admin/usuarios')

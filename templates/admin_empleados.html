@@ -19,6 +19,9 @@
         th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
         th { background: #0b57d0; color: #fff; }
         a.link { color: #1a73e8; text-decoration: none; margin-right: 10px; }
+        th a.thlink { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        th a.thlink:hover { text-decoration: underline; }
+        th .arrow { font-weight: bold; }
         .btn { display: inline-block; background: #1a73e8; color: #fff; padding: 10px 16px; border-radius: 8px;
                text-decoration: none; margin: 15px 0; }
         .btn-danger { background: #d93025; color: #fff; border: none; padding: 6px 12px; border-radius: 6px;
@@ -37,8 +40,16 @@
           {% endfor %}
         {% endwith %}
         <a class="btn" href="{{ url_for('crear_empleado') }}">+ Nuevo Empleado</a>
+        {% macro th(col, label) -%}
+        <th>
+            <a class="thlink" href="{{ url_for('admin_empleados', sort=col, dir='desc' if sort==col and dir=='asc' else 'asc') }}">
+                {{ label }}
+                {%- if sort == col %}<span class="arrow">{{ '▲' if dir == 'asc' else '▼' }}</span>{% endif -%}
+            </a>
+        </th>
+        {%- endmacro %}
         <table>
-            <tr><th>#</th><th>Cédula Real</th><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Usuario</th><th>Acciones</th></tr>
+            <tr><th>#</th>{{ th('cedula', 'Cédula Real') }}{{ th('nombre', 'Nombre') }}{{ th('cargo', 'Cargo') }}{{ th('sucursal', 'Sucursal') }}{{ th('usuario', 'Usuario') }}<th>Acciones</th></tr>
             {% for emp in empleados %}
             <tr>
                 <td>{{ loop.index }}</td>
