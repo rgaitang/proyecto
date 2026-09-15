@@ -585,6 +585,7 @@ def admin_empleados():
         col = Usuario.username
 
     col = col.desc() if direction == 'desc' else col.asc()
+    col = col.nullslast()
     empleados = q.order_by(col, Empleado.nombre).all()
     return render_template('admin_empleados.html', empleados=empleados,
                            sort=sort, dir=direction)
@@ -617,6 +618,7 @@ def admin_usuarios():
         col = Sucursal.nombre
 
     col = col.desc() if direction == 'desc' else col.asc()
+    col = col.nullslast()
     usuarios = q.order_by(col, Usuario.username).all()
     return render_template('admin_usuarios.html', usuarios=usuarios,
                            sort=sort, dir=direction)
