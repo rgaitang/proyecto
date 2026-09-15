@@ -6,7 +6,7 @@ from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    flash, session, jsonify, send_file, abort)
 from werkzeug.utils import secure_filename
-from sqlalchemy import inspect as sa_inspect, text as sa_text, func as sa_func
+from sqlalchemy import inspect as sa_inspect, text as sa_text, func as sa_func, cast as sa_cast, BigInteger as sa_BigInteger
 
 from models import (db, Sucursal, Empleado, Usuario, Turno, RegistroHoras,
                     Novedad, Actividad, Notificacion, ExcelGenerado)
@@ -572,7 +572,7 @@ def admin_empleados():
 
     q = Empleado.query
     if sort == 'cedula':
-        col = sa_func.coalesce(Empleado.cedula_real, Empleado.cedula)
+        col = sa_cast(sa_func.coalesce(Empleado.cedula_real, Empleado.cedula), sa_BigInteger)
     elif sort == 'nombre':
         col = sa_func.coalesce(Empleado.nombre_real, Empleado.nombre)
     elif sort == 'cargo':
@@ -612,7 +612,7 @@ def admin_usuarios():
         col = sa_func.coalesce(Empleado.nombre_real, Empleado.nombre)
     elif sort == 'cedula':
         q = q.outerjoin(Usuario.empleado)
-        col = sa_func.coalesce(Empleado.cedula_real, Empleado.cedula)
+        col = sa_cast(sa_func.coalesce(Empleado.cedula_real, Empleado.cedula), sa_BigInteger)
     else:  # 'sucursal'
         q = q.outerjoin(Usuario.empleado).outerjoin(Empleado.sucursal_ref)
         col = Sucursal.nombre
