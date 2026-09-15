@@ -47,7 +47,7 @@ class Usuario(db.Model):
 
 class Turno(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(10), unique=True, nullable=False)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
     descripcion = db.Column(db.String(200), default='')
     es_domingo = db.Column(db.Boolean, default=False)
 
@@ -56,7 +56,7 @@ class RegistroHoras(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
-    turno_codigo = db.Column(db.String(10), nullable=False)
+    turno_codigo = db.Column(db.String(20), nullable=False)
     observacion = db.Column(db.String(300), default='')
     # Estados: 'pendiente', 'aprobado_local', 'aprobado', 'rechazado'
     estado = db.Column(db.String(20), default='pendiente')

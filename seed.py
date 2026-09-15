@@ -126,6 +126,17 @@ def _migrar_esquema():
             db.session.execute(text('ALTER TABLE empleado ADD COLUMN nombre_real VARCHAR(120)'))
             db.session.commit()
             print('Migracion: columna nombre_real agregada a empleado')
+    # PostgreSQL/MySQL imponen el tamano VARCHAR; SQLite no lo valida.
+    # Ampliamos codigo de turno a 20 (INCAPACIDAD tiene 11 caracteres).
+    if db.engine.dialect.name == 'postgresql':
+        if 'turno' in insp.get_table_names():
+            db.session.execute(text('ALTER TABLE turno ALTER COLUMN codigo TYPE VARCHAR(20)'))
+            db.session.commit()
+            print('Migracion: turno.codigo ampliado a VARCHAR(20)')
+        if 'registro_horas' in insp.get_table_names():
+            db.session.execute(text('ALTER TABLE registro_horas ALTER COLUMN turno_codigo TYPE VARCHAR(20)'))
+            db.session.commit()
+            print('Migracion: registro_horas.turno_codigo ampliado a VARCHAR(20)')
 
 
 def _cargar_cedulas_reales():
