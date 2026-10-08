@@ -37,13 +37,27 @@
             <label>Contraseña</label>
             <input type="password" name="password" required>
             <label>Rol</label>
-            <select name="rol">
+            <select name="rol" id="rol" onchange="toggleSucursal()">
                 <option value="empleado">Empleado</option>
                 <option value="admin_local">Administrador local (sucursal)</option>
                 <option value="admin_global">Administrador global (RRHH)</option>
             </select>
+            <label id="lblSucursal" style="display:none;">Sucursal que administra</label>
+            <select name="sucursal_id" id="selectSucursal" style="display:none;">
+                {% for s in sucursales %}
+                <option value="{{ s.id }}">{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
             <button type="submit">Crear</button>
         </form>
+        <script>
+            function toggleSucursal() {
+                var esLocal = document.getElementById('rol').value === 'admin_local';
+                document.getElementById('lblSucursal').style.display = esLocal ? 'block' : 'none';
+                document.getElementById('selectSucursal').style.display = esLocal ? 'block' : 'none';
+            }
+            toggleSucursal();
+        </script>
     </div>
 </body>
 </html>

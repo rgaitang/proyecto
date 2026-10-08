@@ -10,7 +10,7 @@ Crea: 6 sucursales, tabla de turnos completa (~45 turnos), usuarios admin demo.
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import app, db
+from app import app, db, init_db
 from models import Sucursal, Empleado, Usuario, Turno
 
 # Tabla de turnos (codigo -> (descripcion, es_domingo))
@@ -75,7 +75,7 @@ def cargar_empleados_json():
 
 def main():
     with app.app_context():
-        db.create_all()
+        init_db()
 
         # Sucursales (si no existen)
         if Sucursal.query.count() == 0:

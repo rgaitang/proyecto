@@ -12,30 +12,66 @@
         .topbar h1 { font-size: 20px; }
         .topbar a, .topbar button { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
                     padding: 7px 14px; border-radius: 6px; font-size: 14px; border: none; cursor: pointer; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .topbar a:hover, .topbar button:hover { background: rgba(255,255,255,0.35); }
+        .topbar .badge { background: #d93025; border-radius: 10px; padding: 2px 8px; font-size: 12px;
+                         margin-left: 4px; color: #fff; }
+        .container { max-width: 1250px; margin: 0 auto; }
         .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
         .flash.success { background: #e6f4ea; color: #137333; }
         .flash.danger { background: #fce8e6; color: #c5221f; }
-        h2 { color: #333; margin: 20px 0; }
+        .flash.warning { background: #fef7e0; color: #b06000; }
+        .flash.info { background: #e8f0fe; color: #1a73e8; }
+        h2 { color: #333; margin: 24px 0 12px; font-size: 18px; }
+        .section { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+                   margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         .card { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-                text-decoration: none; color: inherit; display: block; border-left: 5px solid #1a73e8; transition: transform .15s; }
+                text-decoration: none; color: inherit; display: block; border-left: 5px solid #1a73e8;
+                transition: transform .15s; }
         .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
         .card h3 { color: #0b57d0; margin-bottom: 8px; font-size: 17px; }
-        .card .stats { display: flex; gap: 16px; margin-top: 10px; }
+        .card.bloqueada { border-left-color: #d93025; }
+        .card .stats { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
         .card .stat { font-size: 13px; color: #555; }
         .card .stat b { font-size: 18px; color: #1a73e8; display: block; }
-        .actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
-        .actions a { background: #1a73e8; color: #fff; padding: 11px 18px; border-radius: 6px;
-                     text-decoration: none; font-size: 14px; }
-        .actions a:hover { opacity: 0.9; }
+        .card .admin-info { margin-top: 10px; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 8px; }
+        .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+        .tag-ok { background: #e6f4ea; color: #137333; }
+        .tag-nov { background: #e8f0fe; color: #0b57d0; }
+        .tag-block { background: #fce8e6; color: #c5221f; }
+        .tag-sinadmin { background: #eee; color: #555; }
+        .actions { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .actions a, .actions button { background: #1a73e8; color: #fff; padding: 11px 18px; border-radius: 6px;
+                     text-decoration: none; font-size: 14px; border: none; cursor: pointer; }
+        .actions a:hover, .actions button:hover { opacity: 0.9; }
         .btn-danger { background: #d93025 !important; }
+        .btn-green { background: #137333 !important; }
+        .btn-grey { background: #5f6368 !important; }
+        .block-form { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        .block-form input[type=text] { padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; flex: 1; min-width: 140px; }
+        .block-form button { background: #d93025; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .notif { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-bottom: 1px solid #eee; }
+        .notif:last-child { border-bottom: none; }
+        .notif .dot { width: 9px; height: 9px; border-radius: 50%; background: #1a73e8; margin-top: 6px; flex-shrink: 0; }
+        .notif.leida .dot { background: #ccc; }
+        .notif .txt { flex: 1; font-size: 14px; color: #333; }
+        .notif .meta { font-size: 12px; color: #888; margin-top: 3px; }
+        .notif .ops { display: flex; gap: 8px; flex-shrink: 0; }
+        .notif .ops form button { background: #f1f3f4; color: #333; border: none; border-radius: 5px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+        .notif .ops form button.danger { background: #fce8e6; color: #c5221f; }
+        .progress { background: #e8eaed; height: 14px; border-radius: 8px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { background: #137333; height: 100%; }
+        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .controls select, .controls button { padding: 9px 12px; font-size: 14px; border-radius: 6px; border: 1px solid #ccc; }
+        .empty { color: #888; font-size: 14px; padding: 12px 0; }
     </style>
 </head>
 <body>
     <div class="topbar">
         <h1>Panel Global - RRHH</h1>
-        <div style="display:flex;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+            <a href="{{ url_for('trazabilidad') }}">Trazabilidad</a>
+            <a href="{{ url_for('historico_excel') }}">Histórico Excel</a>
             <a href="{{ url_for('admin_empleados') }}">Empleados</a>
             <a href="{{ url_for('admin_usuarios') }}">Usuarios</a>
             <a href="{{ url_for('logout') }}">Cerrar sesión</a>
@@ -48,16 +84,114 @@
           {% endfor %}
         {% endwith %}
 
+        <div class="section">
+            <h2>Notificaciones {% if no_leidas %}<span class="tag tag-block">{{ no_leidas }} nuevas</span>{% endif %}</h2>
+            {% if notificaciones %}
+                <div style="margin:10px 0;">
+                    <form method="POST" action="{{ url_for('notificaciones_leer_todas') }}">
+                        <button class="btn btn-grey">Marcar todas como leídas</button>
+                    </form>
+                </div>
+                {% for n in notificaciones %}
+                <div class="notif {% if n.leida %}leida{% endif %}">
+                    <div class="dot"></div>
+                    <div class="txt">
+                        {{ n.mensaje }}
+                        <div class="meta">{{ n.sucursal_nombre }} · {{ n.creada.strftime('%d/%m/%Y %H:%M') }} · por {{ n.usuario_nombre }}</div>
+                    </div>
+                    <div class="ops">
+                        {% if not n.leida %}
+                        <form method="POST" action="{{ url_for('notificacion_leer', nid=n.id) }}">
+                            <button>Leída</button>
+                        </form>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('bloquear_sucursal', sucursal_id=n.sucursal_id) }}">
+                            <input type="hidden" name="motivo" value="Bloqueo desde notificación: {{ n.mensaje }}">
+                            <button class="danger">Bloquear admin</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">No hay notificaciones.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Informe Global de Novedades</h2>
+            <p style="color:#555;font-size:14px;">
+                El informe se habilita cuando <b>todas las sucursales</b> hayan ingresado sus novedades.
+            </p>
+            <div class="progress">
+                <div class="progress-fill" style="width: {{ (sucursales_con_novedad / resumen|length * 100) if resumen else 0 }}%;"></div>
+            </div>
+            <p style="font-size:14px;color:#333;">
+                Sucursales con novedades: <b>{{ sucursales_con_novedad }} de {{ resumen|length }}</b> ({{ informe_mes }}/{{ informe_anio }})
+            </p>
+            <form method="POST" action="{{ url_for('generar_excel_global') }}" class="controls" style="margin-top:12px;">
+                <select name="mes">
+                    {% for m in range(1,13) %}
+                    <option value="{{ m }}" {% if m == informe_mes %}selected{% endif %}>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][m-1] }}</option>
+                    {% endfor %}
+                </select>
+                <select name="anio">
+                    {% for a in [2025,2026,2027] %}
+                    <option value="{{ a }}" {% if a == informe_anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-green">Generar Informe Global (Excel)</button>
+            </form>
+        </div>
+
         <h2>Sucursales - {{ hoy.strftime('%B %Y') }}</h2>
         <div class="grid">
             {% for item in resumen %}
-            <a class="card" href="{{ url_for('panel_local', sucursal=item.sucursal.id) }}">
-                <h3>{{ item.sucursal.nombre }}</h3>
+            <div class="card {% if item.bloqueado %}bloqueada{% endif %}">
+                <a href="{{ url_for('panel_local', sucursal=item.sucursal.id) }}" style="text-decoration:none;color:inherit;">
+                    <h3>{{ item.sucursal.nombre }}</h3>
+                </a>
                 <div class="stats">
                     <div class="stat"><b>{{ item.empleados }}</b> Empleados</div>
-                    <div class="stat"><b>{{ item.pendientes }}</b> Registros del mes</div>
+                    <div class="stat"><b>{{ item.pendientes }}</b> Registros</div>
+                    <div class="stat"><b>{{ item.novedades }}</b> Novedades</div>
                 </div>
-            </a>
+                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+                    {% if item.novedades > 0 %}
+                        <span class="tag tag-nov">Novedades ingresadas</span>
+                    {% else %}
+                        <span class="tag tag-sinadmin">Sin novedades</span>
+                    {% endif %}
+                    {% if item.admin %}
+                        {% if item.bloqueado %}
+                            <span class="tag tag-block">Admin bloqueado</span>
+                        {% else %}
+                            <span class="tag tag-ok">Admin activo</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="tag tag-sinadmin">Sin admin configurado</span>
+                    {% endif %}
+                </div>
+                <div class="admin-info">
+                    Admin: {{ item.admin.username if item.admin else '—' }}
+                    {% if item.admin and item.admin.ultimo_login %}
+                        · Último ingreso: {{ item.admin.ultimo_login.strftime('%d/%m/%Y %H:%M') }}
+                    {% endif %}
+                </div>
+                {% if item.admin %}
+                    {% if item.bloqueado %}
+                        <div class="block-form">
+                            <form method="POST" action="{{ url_for('desbloquear_sucursal', sucursal_id=item.sucursal.id) }}">
+                                <button style="background:#137333;">Desbloquear</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('bloquear_sucursal', sucursal_id=item.sucursal.id) }}" class="block-form">
+                            <input type="text" name="motivo" placeholder="Motivo del bloqueo">
+                            <button type="submit">Bloquear</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
 

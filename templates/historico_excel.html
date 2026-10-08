@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Excel - Sistema de Horarios</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 16px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar h1 { font-size: 20px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
+                    padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06); font-size: 14px; }
+        th, td { padding: 10px 12px; border: 1px solid #e0e0e0; text-align: left; }
+        th { background: #0b57d0; color: #fff; }
+        .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+        .t-sec { background: #e6f4ea; color: #137333; }
+        .t-glob { background: #f3e8fd; color: #7627bb; }
+        .btn { background: #1a73e8; color: #fff; border: none; padding: 7px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; text-decoration: none; display: inline-block; }
+        .empty { color: #888; padding: 20px; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .flash.danger { background: #fce8e6; color: #c5221f; }
+        .flash.success { background: #e6f4ea; color: #137333; }
+        .flash.info { background: #e8f0fe; color: #1a73e8; }
+        .flash.warning { background: #fef7e0; color: #b06000; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Histórico de Excels Generados</h1>
+        <div style="display:flex;gap:10px;">
+            <a href="{{ url_for('panel_global') }}">Panel Global</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Fecha de generación</th>
+                <th>Generado por</th>
+                <th>Sucursal</th>
+                <th>Período</th>
+                <th>Tipo</th>
+                <th>Archivo</th>
+            </tr>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.id }}</td>
+                <td>{{ log.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ log.usuario_nombre }}</td>
+                <td>{{ log.sucursal_nombre or 'Todas' }}</td>
+                <td>{{ log.nombre_mes }} {{ log.anio }}</td>
+                <td>
+                    {% if log.es_global %}
+                        <span class="tag t-glob">Global</span>
+                    {% else %}
+                        <span class="tag t-sec">Sucursal</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ log.nombre_archivo }}
+                    <a class="btn" href="{{ url_for('descargar_excel', log_id=log.id) }}" style="margin-left:8px;">Descargar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="empty">Aún no se ha generado ningún Excel.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

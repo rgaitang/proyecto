@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trazabilidad - Sistema de Horarios</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .topbar { background: #041e49; color: #fff; padding: 16px 24px; border-radius: 10px;
+                  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topbar h1 { font-size: 20px; }
+        .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2);
+                    padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .controls { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                    display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .controls select, .controls button { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; }
+        .btn { background: #1a73e8; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06); font-size: 13px; }
+        .table-wrap { overflow-x: auto; }
+        th, td { padding: 8px; border: 1px solid #e0e0e0; }
+        th { background: #0b57d0; color: #fff; text-align: left; white-space: nowrap; }
+        td { vertical-align: top; }
+        .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+        .t-login { background: #e8f0fe; color: #0b57d0; }
+        .t-horario { background: #e6f4ea; color: #137333; }
+        .t-novedad { background: #fef7e0; color: #b06000; }
+        .t-excel { background: #f3e8fd; color: #7627bb; }
+        .t-bloqueo { background: #fce8e6; color: #c5221f; }
+        .empty { color: #888; padding: 20px; text-align: center; }
+        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Trazabilidad del Sistema</h1>
+        <div style="display:flex;gap:10px;">
+            <a href="{{ url_for('panel_global') }}">Panel Global</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </div>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <div class="controls">
+            <form method="GET" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <select name="sucursal">
+                    <option value="">Todas las sucursales</option>
+                    {% for s in sucursales %}
+                    <option value="{{ s.id }}" {% if s.id == f_sucursal %}selected{% endif %}>{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <select name="tipo">
+                    <option value="">Todos los tipos</option>
+                    {% for cod, lbl in [('login','Ingreso al sistema'),('horario','Cambio de horario'),('novedad','Novedad'),('excel','Excel generado'),('bloqueo','Bloqueo')] %}
+                    <option value="{{ cod }}" {% if cod == f_tipo %}selected{% endif %}>{{ lbl }}</option>
+                    {% endfor %}
+                </select>
+                <select name="mes">
+                    <option value="">Todos los meses</option>
+                    {% for m in range(1,13) %}
+                    <option value="{{ m }}" {% if m == f_mes %}selected{% endif %}>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][m-1] }}</option>
+                    {% endfor %}
+                </select>
+                <select name="anio">
+                    <option value="">Todos los años</option>
+                    {% for a in [2025,2026,2027] %}
+                    <option value="{{ a }}" {% if a == f_anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn">Filtrar</button>
+                <a href="{{ url_for('trazabilidad') }}" style="color:#1a73e8;font-size:14px;">Limpiar</a>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Fecha y hora</th>
+                <th>Usuario</th>
+                <th>Sucursal</th>
+                <th>Evento</th>
+                <th>Detalle</th>
+                <th>Período</th>
+            </tr>
+            {% for a in actividades %}
+            <tr>
+                <td style="white-space:nowrap;">{{ a.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td>{{ a.usuario_nombre }} <small style="color:#888">({{ a.rol }})</small></td>
+                <td>{{ a.sucursal_nombre or '—' }}</td>
+                <td>
+                    {% set tipos = {'login':'Ingreso al sistema','horario':'Cambio horario','novedad':'Novedad','excel':'Excel generado','bloqueo':'Bloqueo'} %}
+                    <span class="tag t-{{ a.tipo }}">{{ tipos.get(a.tipo, a.tipo) }}</span>
+                    <small style="color:#888;display:block;">{{ a.accion }}</small>
+                </td>
+                <td style="max-width:420px;">{{ a.detalle }}</td>
+                <td>
+                    {% if a.mes %}
+                        {{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][a.mes-1] }} {{ a.anio }}
+                        {% if a.quincena %} · Q{{ a.quincena }}{% endif %}
+                    {% else %}—{% endif %}
+                    {% if a.empleado_nombre %}<br><small style="color:#666;">{{ a.empleado_nombre }}</small>{% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="empty">No hay actividad registrada con esos filtros.</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        <p style="color:#888;font-size:12px;margin-top:10px;">Mostrando últimas 800 entradas. La trazabilidad registra: hora de entrada al sistema, cambios de horarios, novedades y Excels generados.</p>
+    </div>
+</body>
+</html>

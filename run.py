@@ -6,12 +6,12 @@ Uso:
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import app
+from app import app, init_db
 
 if __name__ == '__main__':
     with app.app_context():
-        from models import db, Sucursal
-        db.create_all()
+        init_db()
+        from models import Sucursal
         if Sucursal.query.count() == 0:
             print('No hay sucursales. Ejecuta primero:  python seed.py')
     print('Sistema de Horarios en:  http://127.0.0.1:5000')

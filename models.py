@@ -30,6 +30,12 @@ class Usuario(db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     # Roles: 'admin_global' (Carolina), 'admin_local', 'empleado'
     rol = db.Column(db.String(20), nullable=False, default='empleado')
+    # Sucursal que administra (solo para admin_local)
+    sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id'))
+    # Bloqueo impuesto por RRHH: impide modificar horarios/novedades
+    bloqueado = db.Column(db.Boolean, default=False)
+    motivo_bloqueo = db.Column(db.String(200), default='')
+    ultimo_login = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -67,3 +73,55 @@ class Novedad(db.Model):
     descripcion = db.Column(db.String(300), default='')
     reporta = db.Column(db.String(120), default='')
     estado = db.Column(db.String(20), default='pendiente')
+    empleado = db.relationship('Empleado', backref='novedades', lazy=True)
+
+
+class Actividad(db.Model):
+    """Bitácora de trazabilidad: logins, cambios de horarios, novedades y excels."""
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.DateTime, nullable=False)
+    usuario_id = db.Column(db.Integer)
+    usuario_nombre = db.Column(db.String(120))
+    rol = db.Column(db.String(20))
+    sucursal_id = db.Column(db.Integer)
+    sucursal_nombre = db.Column(db.String(120))
+    # tipos: login, horario, novedad, excel, bloqueo
+    tipo = db.Column(db.String(30))
+    # acciones: login, crear, editar, eliminar, generar, bloquear, desbloquear
+    accion = db.Column(db.String(30))
+    detalle = db.Column(db.Text, default='')
+    mes = db.Column(db.Integer)
+    anio = db.Column(db.Integer)
+    quincena = db.Column(db.Integer)
+    empleado_id = db.Column(db.Integer)
+    empleado_nombre = db.Column(db.String(120))
+
+
+class Notificacion(db.Model):
+    """Avisos hacia RRHH cuando un admin local ingresa novedades."""
+    id = db.Column(db.Integer, primary_key=True)
+    creada = db.Column(db.DateTime, nullable=False)
+    usuario_id = db.Column(db.Integer)
+    usuario_nombre = db.Column(db.String(120))
+    sucursal_id = db.Column(db.Integer)
+    sucursal_nombre = db.Column(db.String(120))
+    tipo = db.Column(db.String(30), default='novedad')
+    mensaje = db.Column(db.Text, default='')
+    leida = db.Column(db.Boolean, default=False)
+    mes = db.Column(db.Integer)
+    anio = db.Column(db.Integer)
+
+
+class ExcelGenerado(db.Model):
+    """Histórico de archivos Excel generados para SIIGO."""
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.DateTime, nullable=False)
+    usuario_id = db.Column(db.Integer)
+    usuario_nombre = db.Column(db.String(120))
+    sucursal_id = db.Column(db.Integer)
+    sucursal_nombre = db.Column(db.String(120))
+    nombre_mes = db.Column(db.String(20))
+    mes = db.Column(db.Integer)
+    anio = db.Column(db.Integer)
+    nombre_archivo = db.Column(db.String(200))
+    es_global = db.Column(db.Boolean, default=False)
