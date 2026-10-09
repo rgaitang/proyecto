@@ -93,7 +93,7 @@
                     {% if reg %}
                     <form method="POST" action="{{ url_for('guardar_turno') }}">
                         <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
-                        <select name="turno" onchange="this.form.submit()">
+                        <select name="turno" onchange="this.form.submit()" autocomplete="off">
                             <option value="">--</option>
                             {% for t in turnos %}
                             <option value="{{ t.codigo }}" {% if reg.turno_codigo == t.codigo %}selected{% endif %}>
@@ -110,7 +110,7 @@
                     {% else %}
                     <form method="POST" action="{{ url_for('guardar_turno') }}">
                         <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
-                        <select name="turno" onchange="if(this.value)this.form.submit()">
+                        <select name="turno" onchange="if(this.value)this.form.submit()" autocomplete="off">
                             <option value="">--</option>
                             {% for t in turnos %}
                             <option value="{{ t.codigo }}">{{ t.codigo }} - {{ t.descripcion }}</option>
