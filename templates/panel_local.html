@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #eef2f7;
-               padding: 24px; color: #1f2937; }
+               padding: 16px 0; color: #1f2937; }
         .topbar { background: linear-gradient(135deg, #0b57d0, #1a73e8); color: #fff; padding: 16px 26px;
                   border-radius: 14px; display: flex; justify-content: space-between; align-items: center;
                   margin-bottom: 20px; box-shadow: 0 6px 20px rgba(11,87,208,0.25); gap: 16px; }
@@ -15,7 +15,7 @@
         .topbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.18);
                     padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background .2s; }
         .topbar a:hover { background: rgba(255,255,255,0.3); }
-        .container { max-width: 1500px; margin: 0 auto; }
+        .container { max-width: 100%; margin: 0; padding: 0; }
         .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
         .flash.success { background: #e6f4ea; color: #137333; border-left: 4px solid #137333; }
         .flash.danger { background: #fce8e6; color: #c5221f; border-left: 4px solid #c5221f; }
@@ -24,8 +24,8 @@
         .controls { background: #fff; padding: 16px 18px; border-radius: 12px;
                     box-shadow: 0 2px 12px rgba(0,0,0,0.07); display: flex; gap: 12px; align-items: center;
                     flex-wrap: wrap; margin-bottom: 18px; }
-        .controls select, .controls button, .controls input { padding: 9px 12px; font-size: 14px;
-                    border-radius: 8px; border: 1px solid #d1d5db; background: #fff; }
+        .controls select, .controls input { padding: 9px 12px; font-size: 14px;
+                    border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #1f2937; }
         .controls select:focus, .controls input:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
         .btn { background: #1a73e8; color: #fff; border: none; padding: 10px 18px; border-radius: 8px;
                cursor: pointer; font-size: 14px; font-weight: 600; display: inline-block; text-decoration: none;
@@ -33,6 +33,9 @@
         .btn:hover { background: #1558b0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.3); }
         .btn-green { background: #137333; }
         .btn-green:hover { background: #0e5c2c; box-shadow: 0 4px 12px rgba(19,115,51,0.3); }
+        .btn-guardar { background: #137333; color: #fff; border: none; border-radius: 5px; padding: 4px 7px;
+                       font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 3px; transition: background .2s; }
+        .btn-guardar:hover { background: #0e5c2c; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 12px;
                 overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,0.08); font-size: 12px; }
         .table-wrap { overflow-x: auto; border-radius: 12px; }
@@ -123,10 +126,6 @@
                     <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
                     {% endfor %}
                 </select>
-                <select name="quincena">
-                    <option value="1" {% if quincena == 1 %}selected{% endif %}>Quincena 1 (1-15)</option>
-                    <option value="2" {% if quincena == 2 %}selected{% endif %}>Quincena 2 (16-fin)</option>
-                </select>
                 <button type="submit" class="btn">Filtrar</button>
             </form>
             <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
@@ -140,24 +139,25 @@
             </div>
         </div>
 
-        <h2>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][mes-1] }} - Quincena {{ quincena }} ({{ dias[0].day }}-{{ dias[-1].day }})</h2>
-        <p style="color:#666;font-size:12px;margin-bottom:8px;">Escribe el código de la letra directamente en cada celda (ej. <b>A</b>, <b>A2</b>, <b>INCAPACIDAD</b>) y presiona Enter o sal de la celda para guardar.</p>
+        <p style="color:#666;font-size:12px;margin-bottom:8px;">Escribe el código de la letra directamente en cada celda (ej. <b>A</b>, <b>A2</b>, <b>INCAPACIDAD</b>) y presiona el botón <b>G</b> (o Enter) para guardar.</p>
         <datalist id="lista-turnos">
             {% for t in turnos %}
             <option value="{{ t.codigo }}">{{ t.descripcion }}</option>
             {% endfor %}
         </datalist>
+        {% for num_q, dias_q in quincenas %}
+        <h2>{{ ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'][mes-1] }} {{ anio }} - Quincena {{ num_q }} ({{ dias_q[0].day }}-{{ dias_q[-1].day }})</h2>
         <div class="table-wrap">
         <table>
             <tr>
                 <th rowspan="2">Empleado</th>
-                {% for d in dias %}
+                {% for d in dias_q %}
                 <th>{{ d.day }}</th>
                 {% endfor %}
                 <th rowspan="2">Acciones</th>
             </tr>
             <tr>
-                {% for d in dias %}
+                {% for d in dias_q %}
                 <td class="dia {% if d.weekday() >= 5 %}weekend{% endif %}">{{ spanish_days[d.weekday()] }}</td>
                 {% endfor %}
             </tr>
@@ -168,41 +168,29 @@
             {% endfor %}
             <tr>
                 <td class="emp">{{ emp.nombre }}<br><span class="ced">{{ emp.cedula_real or emp.cedula }}</span></td>
-                {% for d in dias %}
-                {% set reg = registros.get(d) %}
-                {% if reg and reg.empleado_ref.id == emp.id %}
-                <td class="{% if d.weekday() >= 5 %}weekend{% endif %} {% if reg.estado == 'pendiente' %}pendiente{% endif %}">
-                    <form method="POST" action="{{ url_for('admin_editar_turno') }}" style="margin:0;">
+                {% for d in dias_q %}
+                {% set reg = emp_days.get(d.day) %}
+                <td class="{% if d.weekday() >= 5 %}weekend{% endif %} {% if reg and reg.estado == 'pendiente' %}pendiente{% endif %}">
+                    <form method="POST" action="{{ url_for('admin_editar_turno') }}" class="form-celda" style="margin:0;">
                         <input type="hidden" name="empleado_id" value="{{ emp.id }}">
                         <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
-                        <input type="text" name="turno" list="lista-turnos" value="{{ reg.turno_codigo }}"
-                               class="turno" autocomplete="off"
-                               onchange="this.form.submit()"
-                               placeholder="--">
+                        <input type="text" name="turno" list="lista-turnos" value="{{ reg.turno_codigo if reg else '' }}"
+                               class="turno" autocomplete="off" placeholder="--">
+                        <input type="hidden" name="observacion" value="{{ reg.observacion if reg else '' }}">
+                        <button type="submit" class="btn-guardar" title="Guardar turno">G</button>
                     </form>
                 </td>
-                {% else %}
-                <td class="{% if d.weekday() >= 5 %}weekend{% endif %}">
-                    <form method="POST" action="{{ url_for('admin_editar_turno') }}" style="margin:0;">
-                        <input type="hidden" name="empleado_id" value="{{ emp.id }}">
-                        <input type="hidden" name="fecha" value="{{ d.isoformat() }}">
-                        <input type="text" name="turno" list="lista-turnos" value=""
-                               class="turno" autocomplete="off"
-                               onchange="this.form.submit()"
-                               placeholder="--">
-                        <input type="hidden" name="observacion" value="">
-                    </form>
-                </td>
-                {% endif %}
                 {% endfor %}
-                <td style="min-width:80px;">
-                    {% set total = 0 %}{% for key, reg in registros.items() if reg.empleado_ref.id == emp.id %}{% set total = total + 1 %}{% endfor %}
-                    <span class="estado-tag">{{ total }} turnos</span>
+                <td style="min-width:90px;">
+                    {% set ns = namespace(total=0) %}
+                    {% for d in dias_q %}{% if emp_days.get(d.day) and emp_days.get(d.day).turno_codigo %}{% set ns.total = ns.total + 1 %}{% endif %}{% endfor %}
+                    <span class="estado-tag total-turnos" data-emp-id="{{ emp.id }}">{{ ns.total }} turnos</span>
                 </td>
             </tr>
             {% endfor %}
         </table>
         </div>
+        {% endfor %}
     </div>
 </body>
 </html>

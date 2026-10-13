@@ -295,13 +295,13 @@ def panel_local():
     anio_act = request.args.get('anio', type=int, default=hoy.year)
     quincena_act = 1 if hoy.day <= 15 else 2
 
-    # Todas las quincenas disponibles
+    # Ambas quincenas del mes
     quincenas = [(1, dias_del_periodo(mes_act, anio_act, 1)),
                  (2, dias_del_periodo(mes_act, anio_act, 2))]
     quincena_sel = request.args.get('quincena', type=int, default=quincena_act)
-    dias = dias_del_periodo(mes_act, anio_act, quincena_sel)
+    dias = quincenas[0][1] + quincenas[1][1]
 
-    registros = {r.fecha: r for r in RegistroHoras.query
+    registros = {(r.empleado_id, r.fecha): r for r in RegistroHoras.query
                  .filter(RegistroHoras.empleado_id.in_([e.id for e in empleados]),
                          RegistroHoras.fecha >= dias[0],
                          RegistroHoras.fecha <= dias[-1]).all()}
