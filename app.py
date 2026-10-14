@@ -25,6 +25,8 @@ if not DATABASE_URL:
     DATABASE_URL = 'sqlite:///' + os.path.join(INSTANCE_DIR, 'horarios.db')
 if DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+if DATABASE_URL.startswith('postgresql://'):
+    DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg2://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
