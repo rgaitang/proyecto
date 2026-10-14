@@ -1,5 +1,6 @@
 import os
 import calendar
+import threading
 from datetime import date, datetime, timedelta
 from functools import wraps
 
@@ -27,6 +28,9 @@ if DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 if DATABASE_URL.startswith('postgresql://'):
     DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg2://', 1)
+if DATABASE_URL.startswith('postgresql+psycopg2://') and 'connect_timeout=' not in DATABASE_URL:
+    _sep = '&' if '?' in DATABASE_URL else '?'
+    DATABASE_URL = DATABASE_URL + f'{_sep}connect_timeout=10'
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -1114,14 +1118,22 @@ def init_db():
 
 
 # ---------------- Inicializacion al arrancar (para gunicorn app:app) ----------------
-# Migra, crea las tablas y llena datos base (sucursales, turnos, admin, empleados) si la
-# base esta vacia. Esto garantiza el funcionamiento aunque Render use 'gunicorn app:app'
-# en lugar del start.sh. Es idempotente: solo actua cuando la BD esta vacia.
-with app.app_context():
-    migrar_bd()
-    db.create_all()
-    from seed import main as seed_main
-    seed_main()
+# Migra, crea las tablas y llena datos base si la base esta vacia. Se ejecuta en un
+# hilo en segundo plano para que gunicorn abra el puerto de inmediato y Render marque
+# el servicio como "live" aunque la base tarde en responder. Es idempotente.
+def _inicializar_bd():
+    with app.app_context():
+        try:
+            migrar_bd()
+            db.create_all()
+            from seed import main as seed_main
+            seed_main()
+            print('Inicializacion de BD completada')
+        except Exception as e:
+            print(f'AVISO: inicializacion de BD fallo (la app sigue activa): {e}')
+
+
+threading.Thread(target=_inicializar_bd, daemon=True).start()
 
 if __name__ == '__main__':
     with app.app_context():
